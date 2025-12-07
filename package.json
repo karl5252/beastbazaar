@@ -1,0 +1,23 @@
+{
+  "name": "surf-boy",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "gen:keys": "node scripts/generate-keys.mjs 5",
+    "bump:patch": "node scripts/version-bump.mjs --patch",
+    "bump:minor": "node scripts/version-bump.mjs --minor",
+    "bump:major": "node scripts/version-bump.mjs --major",
+    "prebuild": "node scripts/version-bump.mjs",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "eslint": "^8.25.0",
+    "vite": "^3.1.0"
+  },
+  "dependencies": {
+    "phaser": "^3.55.2"
+  }
+}
