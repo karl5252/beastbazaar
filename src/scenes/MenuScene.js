@@ -25,7 +25,7 @@ export default class MenuScene extends Phaser.Scene {
         const centerX = 400;
         const copyrightY = 550;
 
-        const copyright = this.add.text(centerX, copyrightY, '© 2025    WEE GAMES    ITCH.IO GAME JAM', {
+        const copyright = this.add.text(centerX, copyrightY, '© 2025    WEE GAMES', {
             fontSize: '16px',
             fontFamily: 'Courier New, monospace',
             color: '#9ca3af', // Gray
@@ -56,10 +56,10 @@ export default class MenuScene extends Phaser.Scene {
 
     onSceneWake() {
         // Reload top score from storage
-        this.topScore = this.loadTopScore();
+        //this.topScore = this.loadTopScore();
 
         // Update the display
-        this.updateTopScoreDisplay();
+        //this.updateTopScoreDisplay();
     }
 
 

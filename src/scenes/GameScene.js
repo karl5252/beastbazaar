@@ -1,11 +1,7 @@
 import Phaser from 'phaser'
-import {Player} from "../entities/Player.js";
-import {Obstacle} from "../entities/Obstacle.js";
-import {DEPTH} from "../game/constants/Depth.js";
 import {logger} from "../utils/Logger.js";
 import {EventNames} from "../events/EventNames.js";
 import {EventBus} from "../EventBus.js";
-import {GameUI} from "../ui/GameUi.js";
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
@@ -101,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.tweens.pauseAll();
         this.time.paused = true;
-        this.player.inputProvider.disableInput(999999);
+        //this.player.inputProvider.disableInput(999999);
 
         if (this.escKey) {
             this.escKey.removeAllListeners()
