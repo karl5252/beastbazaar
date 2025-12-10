@@ -23,6 +23,15 @@ export class Player {
         this.herd[animalType] = count;
     }
 
+    /**
+     * Transfer a specified count of animals from the current player to the recipient player.
+     * Ensures the current player has enough animals to transfer.
+     * @param recipientPlayer
+     * @param animalType
+     * @param count
+     * @returns {boolean}
+     */
+
     transfer_animal(recipientPlayer, animalType, count) {
         // check if animal type is in herd at all if not return false
 
@@ -30,7 +39,7 @@ export class Player {
             return false;
         }
         // get available count
-        let availableCount = self.getHerd(animalType, 0);
+        let availableCount = this.getHerd(animalType, 0);
         if (availableCount >= count) {
             // deduct from sender
             this.herd[animalType] -= count;
