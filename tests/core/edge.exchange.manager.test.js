@@ -1,8 +1,8 @@
 import {beforeEach, describe, expect, it} from "vitest";
-import {INDEXES} from "../src/game/constants/Constants.js";
-import {ExchangeManager} from "../src/game/core/ExchangeManager.js";
-import {PlayerState} from "../src/game/core/PlayerState.js";
-import {setHerd} from "./helpers/helper.js";
+import {INDEXES} from "../../src/game/constants/Constants.js";
+import {ExchangeManager} from "../../src/game/core/ExchangeManager.js";
+import {PlayerState} from "../../src/game/core/PlayerState.js";
+import {setHerd} from "../helpers/helper.js";
 
 describe("ExchangeManager - Edge Cases", () => {
     let em;
