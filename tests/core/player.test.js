@@ -1,11 +1,11 @@
-import {Player} from "../../src/game/core/Player.js";
+import {PlayerState} from "../../src/game/core/PlayerState.js";
 import {setHerd} from "../helpers/helper.js";
 
 describe("player test", () => {
     let player;
 
     beforeEach(() => {
-        player = new Player("testPlayer", 0); // <-- przypisanie, nie deklaracja
+        player = new PlayerState("testPlayer", 0); // <-- przypisanie, nie deklaracja
     });
 
     it("get players herd", () => {

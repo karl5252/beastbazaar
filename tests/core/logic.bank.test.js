@@ -1,4 +1,4 @@
-import {Player} from "../../src/game/core/Player.js";
+import {PlayerState} from "../../src/game/core/PlayerState.js";
 import {Logic} from "../../src/game/core/Logic.js";
 import {setHerd} from "../helpers/helper.js";
 
@@ -7,7 +7,7 @@ describe("bank logic tests", () => {
     let logic;
 
     beforeEach(() => {
-        player = new Player();
+        player = new PlayerState();
         logic = new Logic();
     });
     it("test rule that bank cannot be debited if there is not sufficient amount of animals to transfer should transfer whatever is available", () => {
@@ -42,8 +42,8 @@ describe("bank logic tests", () => {
 
     it("test rule if player returns animal then main herd is not updated over the max value", () => {
             // bank limit for rabbits is 60
-            // Player has 2 more rabbits  - wrong state that happens when calculation gets a hiccup
-            // Player rolls Fox
+        // PlayerState has 2 more rabbits  - wrong state that happens when calculation gets a hiccup
+        // PlayerState rolls Fox
             // Bank is overflown - wrong ste of bank
             player.updateHerd("Rabbit", 2); // 1 pair
             const bankInitialState = JSON.parse(JSON.stringify(logic.bankHerd.getHerd()));

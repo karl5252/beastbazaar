@@ -1,4 +1,4 @@
-import {Player} from "../../src/game/core/Player.js";
+import {PlayerState} from "../../src/game/core/PlayerState.js";
 import {Logic} from "../../src/game/core/Logic.js";
 import {setHerd} from "../helpers/helper.js";
 
@@ -7,7 +7,7 @@ describe("predators logic tests", () => {
     let logic;
 
     beforeEach(() => {
-        player = new Player();
+        player = new PlayerState();
         logic = new Logic();
     });
     it("test rule if player has no foxhound and rolls fox he loses all rabbits ONLY", () => {

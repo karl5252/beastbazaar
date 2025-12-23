@@ -1,13 +1,12 @@
-import {Player} from "./Player.js";
+import {PlayerState} from "./PlayerState.js";
 import {BANK_MAX} from "../constants/BankConfig.js";
 
 export class Logic {
     constructor(players=[]) {
         this.players = players;
         this.currentPlayerIndex = 0;
-        this.exchangeRequests = [];
         // init bank herd as PLAYER "bank"
-        this.bankHerd = new Player("MainHerd", 99)
+        this.bankHerd = new PlayerState("MainHerd", 99)
         this.bankHerd.updateHerd("Rabbit", 60);
         this.bankHerd.updateHerd("Sheep", 24);
         this.bankHerd.updateHerd("Pig", 20);

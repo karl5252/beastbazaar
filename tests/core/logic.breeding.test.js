@@ -1,4 +1,4 @@
-import {Player} from "../../src/game/core/Player.js";
+import {PlayerState} from "../../src/game/core/PlayerState.js";
 import {Logic} from "../../src/game/core/Logic.js";
 import {setHerd} from "../helpers/helper.js";
 
@@ -7,12 +7,12 @@ describe("breeding logic tests", () => {
     let logic;
 
     beforeEach(() => {
-        player = new Player();
+        player = new PlayerState();
         logic = new Logic();
     });
 
     it("test rule if player herd is empty and dice shows different animals dont update herd", () => {
-        let player = new Player();
+        let player = new PlayerState();
         let logic = new Logic();
 
         // Simulate dice roll with different animals

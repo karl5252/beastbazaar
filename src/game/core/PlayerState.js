@@ -1,5 +1,4 @@
-
-export class Player {
+export class PlayerState {
     constructor(name="testPlayer", index=0) {
         this.name = name;
         this.index = index;
