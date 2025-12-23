@@ -84,8 +84,8 @@ describe("exchange manager logic", () => {
             requestorHerd: p1.getHerd()
         });
         //console.log(em.exchangeRequests);
-        console.log("p1", p1.getHerd());
-        console.log("p2", p2.getHerd());
+        //console.log("p1", p1.getHerd());
+        //console.log("p2", p2.getHerd());
 
         const acc = em.acceptRequest({
             requestId: res.requestId,
@@ -101,5 +101,98 @@ describe("exchange manager logic", () => {
 
     })
 
-    it("Test exchange requests invalidation")
-})
+    it("Test exchange requests invalidation. Requestor lacks ability to offer", () => {
+        setHerd(p1, {Sheep: 11});
+        setHerd(p2, {Cow: 11});
+        const turn = 1;
+        const expiry = 2;
+
+        const res1 = em.postRequest({
+            requestorIndex: p1.index,
+            targetIndex: p2.index,
+            offer: {animal: "Sheep", amount: 11},
+            want: {animal: "Cow", amount: 11},
+            createdTurn: 0,
+            requestorHerd: p1.getHerd()
+        });
+        setHerd(p1, {Sheep: 10});
+
+        const acc = em.acceptRequest({
+            requestId: res1.requestId,
+            acceptorIndex: p2.index,
+            currentTurn: turn,
+            expiryTurn: expiry,
+            requestorHerd: p1.getHerd(),
+            acceptorHerd: p2.getHerd()
+        })
+        expect(acc.ok).toBe(false);
+        expect(acc.reason).toBe("requestor_lacks_offer");
+
+        expect(em.exchangeRequests).toHaveLength(1);
+        expect(em.exchangeRequests.at(0).status).toBe("invalid");
+
+    })
+
+    it("Test exchange requests invalidation. Acceptor lacks ability to exchange", () => {
+        setHerd(p1, {Sheep: 11});
+        setHerd(p2, {Cow: 11});
+        const turn = 1;
+        const expiry = 2;
+
+        const res1 = em.postRequest({
+            requestorIndex: p1.index,
+            targetIndex: p2.index,
+            offer: {animal: "Sheep", amount: 11},
+            want: {animal: "Cow", amount: 11},
+            createdTurn: 0,
+            requestorHerd: p1.getHerd()
+        });
+        setHerd(p2, {Cow: 0});
+
+        const acc = em.acceptRequest({
+            requestId: res1.requestId,
+            acceptorIndex: p2.index,
+            currentTurn: turn,
+            expiryTurn: expiry,
+            requestorHerd: p1.getHerd(),
+            acceptorHerd: p2.getHerd()
+        })
+        expect(acc.ok).toBe(false);
+        expect(acc.reason).toBe("acceptor_lacks_want");
+
+        expect(em.exchangeRequests).toHaveLength(1);
+        expect(em.exchangeRequests.at(0).status).toBe("invalid");
+
+    })
+    it("Test exchange requests invalidation. Cleaning up invalidated requests", () => {
+        setHerd(p1, {Sheep: 11});
+        setHerd(p2, {Cow: 11});
+        const turn = 1;
+        const expiry = 2;
+
+        const res1 = em.postRequest({
+            requestorIndex: p1.index,
+            targetIndex: p2.index,
+            offer: {animal: "Sheep", amount: 11},
+            want: {animal: "Cow", amount: 11},
+            createdTurn: 0,
+            requestorHerd: p1.getHerd()
+        });
+        setHerd(p2, {Cow: 0});
+
+        const acc = em.acceptRequest({
+            requestId: res1.requestId,
+            acceptorIndex: p2.index,
+            currentTurn: turn,
+            expiryTurn: expiry,
+            requestorHerd: p1.getHerd(),
+            acceptorHerd: p2.getHerd()
+        })
+
+        expect(em.exchangeRequests).toHaveLength(1);
+        em.pruneInvalidRequests({currentTurn: turn, expiryTurn: expiry, herdProvider: p1.getHerd()});
+
+        expect(em.exchangeRequests).toHaveLength(0);
+
+    })
+});

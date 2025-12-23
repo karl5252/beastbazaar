@@ -65,7 +65,7 @@ export class ExchangeManager {
             }
 
             const requestorHerd = herdProvider?.(r.requestorIndex);
-            const acceptorHerd = r.target?.index !== INDEXES.BANK_INDEX9 ? herdProvider?.(r.target.index) : null;
+            const acceptorHerd = r.target?.index !== INDEXES.BANK_INDEX ? herdProvider?.(r.target.index) : null;
 
             const v = this.validateForAccept(r, {
                 acceptorIndex: r.target?.index,
@@ -118,17 +118,19 @@ export class ExchangeManager {
         if (req.targetIndex === req.requestorIndex) {
             if (!Number.isInteger(acceptorIndex) || acceptorIndex < 0) return {ok: false, reason: "bad_acceptor"};
             if (!acceptorHerd) return {ok: false, reason: "missing_acceptor_herd"};
-            if ((acceptorHerd[req.want.animal] ?? 0) < req.want.amount) return {
+
+        }
+        if ((acceptorHerd[req.want.animal] ?? 0) < req.want.amount) return {
                 ok: false,
                 reason: "acceptor_lacks_want"
             };
-        } else {
+        /*} else {
             // BANK: w tej “odłączonej” wersji nie sprawdzamy stanów banku ani kursów.
             // To dojdzie po spięciu z bankiem i rules.
             if (!skipTargetBalanceCheck) {
                 // placeholder
             }
-        }
+        }*/
 
         return {ok: true};
     }
