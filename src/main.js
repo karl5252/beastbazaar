@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 
-import GameScene from './scenes/GameScene.js'
+import {GameScene} from './scenes/GameScene.js'
 import {Preloader} from "./scenes/Preloader.js";
 import {Boot} from "./scenes/Boot.js";
 import {MenuScene} from "./scenes/MenuScene.js";
