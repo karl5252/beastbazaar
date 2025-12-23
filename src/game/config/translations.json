@@ -20,6 +20,19 @@
     "how_to_play_end": "End your turn",
     "how_to_play_breeding": "• Roll doubles to breed! Get 1 animal, or more if you have pairs.",
     "how_to_play_predators": "• Fox eats rabbits, Wolf eats all (except horses & dogs)!",
-    "how_to_play_dogs": "• Foxhound protects from Fox, Wolfhound from Wolf."
+    "how_to_play_dogs": "• Foxhound protects from Fox, Wolfhound from Wolf.",
+    "game_turn": "Turn",
+    "game_herd": "Herd",
+    "game_roll": "ROLL",
+    "game_trade": "TRADE",
+    "game_bank": "BANK",
+    "game_end_turn": "END TURN",
+    "game_pending_trades": "Pending Trades",
+    "game_see_all": "See All",
+    "game_for": "for",
+    "game_expires_in": "Expires in",
+    "game_turns": "turns",
+    "game_accept": "Accept",
+    "game_reject": "Reject"
   }
 }
