@@ -1,0 +1,25 @@
+{
+  "en": {
+    "menu_title": "SUPER FARMER",
+    "menu_players": "Players:",
+    "menu_names_optional": "Names (click to edit):",
+    "menu_enter_player_name": "Enter name for Player {number}:",
+    "menu_difficulty": "Difficulty:",
+    "menu_trade_expiry": "Trade Expiry:",
+    "menu_turns": "turns",
+    "menu_start_game": "START GAME",
+    "menu_how_to_play": "HOW TO PLAY",
+    "difficulty_easy": "Easy",
+    "difficulty_medium": "Medium",
+    "button_close": "CLOSE",
+    "how_to_play_title": "HOW TO PLAY",
+    "how_to_play_objective": "Collect one of each: Rabbit, Sheep, Pig, Cow, Horse",
+    "how_to_play_turn": "On your turn:",
+    "how_to_play_roll": "Roll dice to breed animals",
+    "how_to_play_trade": "Trade with bank or other players",
+    "how_to_play_end": "End your turn",
+    "how_to_play_breeding": "• Roll doubles to breed! Get 1 animal, or more if you have pairs.",
+    "how_to_play_predators": "• Fox eats rabbits, Wolf eats all (except horses & dogs)!",
+    "how_to_play_dogs": "• Foxhound protects from Fox, Wolfhound from Wolf."
+  }
+}
