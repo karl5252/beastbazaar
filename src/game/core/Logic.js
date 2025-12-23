@@ -1,4 +1,5 @@
 import {Player} from "./Player.js";
+import {BANK_MAX} from "../constants/BankConfig.js";
 
 export class Logic {
     constructor(players=[]) {
@@ -95,7 +96,7 @@ export class Logic {
 
         const rabbits = herd["Rabbit"] ?? 0;
         if (rabbits > 0) {
-            player.transfer_animal(this.bankHerd, "Rabbit", rabbits);
+            this.returnToBankWithCull(player, "Rabbit", rabbits);
         }
         return true;
     }
@@ -113,10 +114,62 @@ export class Logic {
         ["Rabbit", "Sheep", "Pig", "Cow"].forEach(animal => {
             const count = herd[animal] ?? 0;
             if (count > 0) {
-                player.transfer_animal(this.bankHerd, animal, count);
+                this.returnToBankWithCull(player, animal, count);
             }
         });
 
         return true;
     }
+
+    // handle main herd flow
+    canBankReceive(animal) {
+        const max = BANK_MAX[animal] ?? 0;
+        const current = this.bankHerd.getHerd()[animal] ?? 0;
+        return Math.max(0, max - current);
+    }
+
+    returnToBank(sender, animal, amount) {
+        if (amount <= 0) return 0;
+
+        const space = this.canBankReceive(animal);
+        const actual = Math.min(amount, space);
+        if (actual > 0) {
+            sender.transfer_animal(this.bankHerd, animal, actual);
+        }
+        return actual;
+    }
+
+    /**
+     * Method to be used only to handle ILLEGAL state
+     * @param sender
+     * @param animal
+     * @param amount
+     * @returns {number}
+     */
+    returnToBankWithCull(sender, animal, amount) {
+        if (amount <= 0) return 0;
+
+        const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
+        const max = BANK_MAX[animal] ?? bankCount; // no max no limits
+        const space = Math.max(0, max - bankCount);
+
+        const actual = Math.min(amount, space);      // how muhc ank can take
+        const overflow = amount - actual;            // how muhc to cull
+
+        // 1) return to bank as much as possible
+        if (actual > 0) {
+            sender.transfer_animal(this.bankHerd, animal, actual);
+        }
+
+        // 2) remove from sender (cull)
+        if (overflow > 0) {
+            const senderCount = sender.getHerd()[animal] ?? 0;
+            sender.updateHerd(animal, Math.max(0, senderCount - overflow));
+        }
+
+        return actual;
+    }
+
+
+
 }

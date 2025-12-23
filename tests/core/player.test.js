@@ -1,4 +1,5 @@
 import {Player} from "../../src/game/core/Player.js";
+import {setHerd} from "../helpers/helper.js";
 
 describe("player test", () => {
     let player;
@@ -20,7 +21,8 @@ describe("player test", () => {
     })
 
     it("update players herd", () => {
-        player.updateHerd("Sheep", 11);
+        setHerd(player, {Sheep: 11});
+
         expect(player.getHerd()["Sheep"]).toBe(11)
     })
 })
