@@ -19,7 +19,7 @@ export class ExchangeManager {
     }
 
     getPendingRequests(currentTurn, expiryTurns) {
-        // soft prune
+        // Soft prune - mark expired requests but don't remove them yet
         this.exchangeRequests.forEach(r => {
             if (r.status !== "pending") return;
             if (r.isExpired(currentTurn, expiryTurns)) r.markExpired();
@@ -44,11 +44,11 @@ export class ExchangeManager {
             return {ok: false, reason: v.reason};
         }
 
-        // Na tym etapie manager “zaakceptował” transakcję.
-        // Wykonanie transferów zrobisz później w warstwie Logic, bo tu nie mamy Playerów.
+        // At this point the manager has "accepted" the transaction.
+        // Actual transfer execution happens in the Logic layer since it needs PlayerState objects.
         req.markAccepted();
 
-        // Możesz usuwać accepted, żeby nie puchło:
+        // Remove accepted requests to prevent memory bloat
         this.exchangeRequests = this.exchangeRequests.filter(r => r.id !== req.id);
 
         return {ok: true, request: req};
@@ -65,24 +65,26 @@ export class ExchangeManager {
             }
 
             const requestorHerd = herdProvider?.(r.requestorIndex);
-            const acceptorHerd = r.target?.index !== INDEXES.BANK_INDEX ? herdProvider?.(r.target.index) : null;
+            const acceptorHerd = r.targetIndex !== INDEXES.BANK_INDEX
+                ? herdProvider?.(r.targetIndex)
+                : null;
 
             const v = this.validateForAccept(r, {
-                acceptorIndex: r.target?.index,
+                acceptorIndex: r.targetIndex,
                 requestorHerd,
                 acceptorHerd,
-                // BANK walidujesz dopiero po spięciu z bankiem, więc tu go traktujemy jako “pomijamy”
-                skipTargetBalanceCheck: r.target?.index === INDEXES.BANK_INDEX,
+                // Skip target balance check for bank - bank exchanges are validated at execution time
+                skipTargetBalanceCheck: r.targetIndex === INDEXES.BANK_INDEX,
             });
 
             if (!v.ok) r.markInvalid(v.reason);
         }
 
-        // Wywal śmieci:
+        // Remove all non-pending requests
         this.exchangeRequests = this.exchangeRequests.filter(r => r.status === "pending");
     }
 
-    // --- walidacje ---
+    // --- Validation methods ---
 
     validateForPosting(req, requestorHerd) {
         if (!Number.isInteger(req.targetIndex) || req.targetIndex < 0) {
@@ -95,12 +97,11 @@ export class ExchangeManager {
         const basic = this.validateLegs(req);
         if (!basic.ok) return basic;
 
-        // requestor musi mieć offer już przy tworzeniu requestu
+        // Requestor must have the offered animals when creating the request
         if (!requestorHerd) return {ok: false, reason: "missing_requestor_herd"};
-        if ((requestorHerd[req.offer.animal] ?? 0) < req.offer.amount) return {
-            ok: false,
-            reason: "requestor_lacks_offer"
-        };
+        if ((requestorHerd[req.offer.animal] ?? 0) < req.offer.amount) {
+            return {ok: false, reason: "requestor_lacks_offer"};
+        }
 
         return {ok: true};
     }
@@ -109,37 +110,67 @@ export class ExchangeManager {
         const basic = this.validateLegs(req);
         if (!basic.ok) return basic;
 
+        // Requestor must still have the animals they're offering
         if (!requestorHerd) return {ok: false, reason: "missing_requestor_herd"};
-        if ((requestorHerd[req.offer.animal] ?? 0) < req.offer.amount) return {
-            ok: false,
-            reason: "requestor_lacks_offer"
-        };
-
-        if (req.targetIndex === req.requestorIndex) {
-            if (!Number.isInteger(acceptorIndex) || acceptorIndex < 0) return {ok: false, reason: "bad_acceptor"};
-            if (!acceptorHerd) return {ok: false, reason: "missing_acceptor_herd"};
-
+        if ((requestorHerd[req.offer.animal] ?? 0) < req.offer.amount) {
+            return {ok: false, reason: "requestor_lacks_offer"};
         }
-        if ((acceptorHerd[req.want.animal] ?? 0) < req.want.amount) return {
-                ok: false,
-                reason: "acceptor_lacks_want"
-            };
-        /*} else {
-            // BANK: w tej “odłączonej” wersji nie sprawdzamy stanów banku ani kursów.
-            // To dojdzie po spięciu z bankiem i rules.
-            if (!skipTargetBalanceCheck) {
-                // placeholder
+
+        // FIXED: Validate acceptor when target is NOT the requestor (player-to-player trade)
+        if (req.targetIndex !== req.requestorIndex) {
+            if (!Number.isInteger(acceptorIndex) || acceptorIndex < 0) {
+                return {ok: false, reason: "bad_acceptor"};
             }
-        }*/
+
+            // For player-to-player trades, verify acceptor has what's needed
+            if (!skipTargetBalanceCheck) {
+                if (!acceptorHerd) return {ok: false, reason: "missing_acceptor_herd"};
+                if ((acceptorHerd[req.want.animal] ?? 0) < req.want.amount) {
+                    return {ok: false, reason: "acceptor_lacks_want"};
+                }
+            }
+        }
+        // Note: Bank exchanges (targetIndex === BANK_INDEX) are validated separately
+        // at execution time since bank state and exchange rates need to be checked together
 
         return {ok: true};
     }
 
     validateLegs(req) {
-        if (!req.offer.animal || !req.want.animal) return {ok: false, reason: "bad_animal"};
-        if (req.offer.animal === req.want.animal) return {ok: false, reason: "same_animal"};
-        if (!Number.isFinite(req.offer.amount) || req.offer.amount <= 0) return {ok: false, reason: "bad_offer_amount"};
-        if (!Number.isFinite(req.want.amount) || req.want.amount <= 0) return {ok: false, reason: "bad_want_amount"};
+        if (!req.offer.animal || !req.want.animal) {
+            return {ok: false, reason: "bad_animal"};
+        }
+        if (req.offer.animal === req.want.animal) {
+            return {ok: false, reason: "same_animal"};
+        }
+        if (!Number.isFinite(req.offer.amount) || req.offer.amount <= 0) {
+            return {ok: false, reason: "bad_offer_amount"};
+        }
+        if (!Number.isFinite(req.want.amount) || req.want.amount <= 0) {
+            return {ok: false, reason: "bad_want_amount"};
+        }
         return {ok: true};
+    }
+
+    /**
+     * Execute the actual transfer of animals between players
+     * Called after validation passes
+     */
+    executeExchange(request, requestorPlayer, acceptorPlayer) {
+        const success1 = requestorPlayer.transfer_animal(
+            acceptorPlayer,
+            request.offer.animal,
+            request.offer.amount
+        );
+
+        const success2 = acceptorPlayer.transfer_animal(
+            requestorPlayer,
+            request.want.animal,
+            request.want.amount
+        );
+
+        return success1 && success2
+            ? {ok: true}
+            : {ok: false, reason: "transfer_failed"};
     }
 }

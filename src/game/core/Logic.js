@@ -14,8 +14,8 @@ export class Logic {
             hasExchanged: false,
         };
 
-        // init bank herd as PLAYER "bank"
-        this.bankHerd = new PlayerState("MainHerd", 99)
+        // Initialize bank herd as a PlayerState "bank"
+        this.bankHerd = new PlayerState("MainHerd", 99);
         this.bankHerd.updateHerd("Rabbit", 60);
         this.bankHerd.updateHerd("Sheep", 24);
         this.bankHerd.updateHerd("Pig", 20);
@@ -50,43 +50,55 @@ export class Logic {
         this.turnNumber += 1;
         this.startTurn();
 
-        return {ok: true, winnerIndex: null, currentPlayerIndex: this.currentPlayerIndex, turnNumber: this.turnNumber};
+        return {
+            ok: true,
+            winnerIndex: null,
+            currentPlayerIndex: this.currentPlayerIndex,
+            turnNumber: this.turnNumber
+        };
     }
 
     processDiceRoll(currentPlayer, greenDiceResult, redDiceResult) {
         if (currentPlayer.index !== this.getCurrentPlayer().index) {
             return {ok: false, reason: "not_your_turn"};
         }
-        if (this.turnState.hasRolled) return {ok: false, reason: "already_rolled"};
+        if (this.turnState.hasRolled) {
+            return {ok: false, reason: "already_rolled"};
+        }
 
         const hasFox = greenDiceResult === "Fox" || redDiceResult === "Fox";
         const hasWolf = greenDiceResult === "Wolf" || redDiceResult === "Wolf";
 
-        // both
+        // Handle predator attacks
         if (hasFox && hasWolf) {
             this.handleFoxAttack(currentPlayer);
             this.handleWolfAttack(currentPlayer);
-            return;
+            this.turnState.hasRolled = true;
+            return {ok: true, type: "predators", predators: ["Fox", "Wolf"]};
         }
 
-        // singular
         if (hasFox) {
             this.handleFoxAttack(currentPlayer);
-            return;
+            this.turnState.hasRolled = true;
+            return {ok: true, type: "predator", predator: "Fox"};
         }
 
         if (hasWolf) {
             this.handleWolfAttack(currentPlayer);
-            return;
+            this.turnState.hasRolled = true;
+            return {ok: true, type: "predator", predator: "Wolf"};
         }
 
+        // Handle breeding
         const herd = currentPlayer.getHerd();
 
+        // Both dice show the same animal
         if (greenDiceResult === redDiceResult) {
             const animal = greenDiceResult;
             const currentCount = herd[animal] ?? 0;
             const pairs = Math.floor(currentCount / 2);
 
+            // Even with no animals, rolling a pair grants 1
             const gain = Math.max(pairs, 1);
 
             const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
@@ -95,12 +107,19 @@ export class Logic {
             if (actualGain > 0) {
                 this.bankHerd.transfer_animal(currentPlayer, animal, actualGain);
             }
-            return;
+
+            this.turnState.hasRolled = true;
+            return {ok: true, type: "breeding", animal, gained: actualGain};
         }
 
+        // Different animals rolled - need to own at least one animal to breed
         const hasAnimals = Object.values(herd).some(count => count > 0);
-        if (!hasAnimals) return;
+        if (!hasAnimals) {
+            this.turnState.hasRolled = true;
+            return {ok: true, type: "no_breeding", reason: "no_animals"};
+        }
 
+        const gained = {};
         [greenDiceResult, redDiceResult].forEach(animal => {
             const currentCount = herd[animal] ?? 0;
             if (currentCount <= 0) return;
@@ -109,58 +128,63 @@ export class Logic {
             if (pairs <= 0) return;
 
             const gain = pairs;
-
             const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
             const actualGain = Math.min(gain, bankCount);
 
             if (actualGain > 0) {
                 this.bankHerd.transfer_animal(currentPlayer, animal, actualGain);
+                gained[animal] = actualGain;
             }
         });
 
         this.turnState.hasRolled = true;
-        return {ok: true};
+        return {ok: true, type: "breeding", gained};
     }
-
-
 
     handleFoxAttack(player) {
         const herd = player.getHerd();
         const foxhounds = herd["Foxhound"] ?? 0;
 
+        // If player has a foxhound, sacrifice it instead
         if (foxhounds > 0) {
             player.updateHerd("Foxhound", foxhounds - 1);
-            return true;
+            return {protected: true, cost: "Foxhound"};
         }
 
+        // Otherwise, lose all rabbits
         const rabbits = herd["Rabbit"] ?? 0;
         if (rabbits > 0) {
             this.returnToBankWithCull(player, "Rabbit", rabbits);
+            return {protected: false, lost: {Rabbit: rabbits}};
         }
-        return true;
-    }
 
+        return {protected: false, lost: {}};
+    }
 
     handleWolfAttack(player) {
         const herd = player.getHerd();
         const wolfhounds = herd["Wolfhound"] ?? 0;
 
+        // If player has a wolfhound, sacrifice it instead
         if (wolfhounds > 0) {
             player.updateHerd("Wolfhound", wolfhounds - 1);
-            return true;
+            return {protected: true, cost: "Wolfhound"};
         }
 
+        // Otherwise, lose all vulnerable animals (not Horse or hounds)
+        const lost = {};
         ["Rabbit", "Sheep", "Pig", "Cow"].forEach(animal => {
             const count = herd[animal] ?? 0;
             if (count > 0) {
                 this.returnToBankWithCull(player, animal, count);
+                lost[animal] = count;
             }
         });
 
-        return true;
+        return {protected: false, lost};
     }
 
-    // handle main herd flow
+    // Handle main herd flow
     canBankReceive(animal) {
         const max = BANK_MAX[animal] ?? 0;
         const current = this.bankHerd.getHerd()[animal] ?? 0;
@@ -180,27 +204,28 @@ export class Logic {
 
     /**
      * Method to be used only to handle ILLEGAL state
-     * @param sender
-     * @param animal
-     * @param amount
-     * @returns {number}
+     * Returns animals to bank, culling overflow if bank is full
+     * @param sender - Player returning animals
+     * @param animal - Animal type
+     * @param amount - Number to return
+     * @returns {number} - Amount actually returned to bank (not including culled)
      */
     returnToBankWithCull(sender, animal, amount) {
         if (amount <= 0) return 0;
 
         const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
-        const max = BANK_MAX[animal] ?? bankCount; // no max no limits
+        const max = BANK_MAX[animal] ?? bankCount; // If no max, use current bank count
         const space = Math.max(0, max - bankCount);
 
-        const actual = Math.min(amount, space);      // how muhc ank can take
-        const overflow = amount - actual;            // how muhc to cull
+        const actual = Math.min(amount, space);    // How much bank can take
+        const overflow = amount - actual;          // How much to cull
 
-        // 1) return to bank as much as possible
+        // 1) Return to bank as much as possible
         if (actual > 0) {
             sender.transfer_animal(this.bankHerd, animal, actual);
         }
 
-        // 2) remove from sender (cull)
+        // 2) Remove overflow from sender (cull)
         if (overflow > 0) {
             const senderCount = sender.getHerd()[animal] ?? 0;
             sender.updateHerd(animal, Math.max(0, senderCount - overflow));
@@ -211,14 +236,23 @@ export class Logic {
 
     exchangeWithBank(animalFrom, animalTo) {
         const player = this.getCurrentPlayer();
-        if (this.turnState.hasExchanged) return {ok: false, reason: "already_exchanged"};
+        if (this.turnState.hasExchanged) {
+            return {ok: false, reason: "already_exchanged"};
+        }
 
-        const res = exchangeWithBankAtomic({player, bank: this.bankHerd, animalFrom, animalTo});
-        if (res.ok) this.turnState.hasExchanged = true;
+        const res = exchangeWithBankAtomic({
+            player,
+            bank: this.bankHerd,
+            animalFrom,
+            animalTo
+        });
+
+        if (res.ok) {
+            this.turnState.hasExchanged = true;
+        }
 
         return res;
     }
-
 }
 
 function move(herdA, herdB, animal, amount) {
@@ -235,15 +269,23 @@ export function exchangeWithBankAtomic({player, bank, animalFrom, animalTo}) {
     const p = player.getHerd();
     const b = bank.getHerd();
 
-    if ((p[animalFrom] ?? 0) < rate.give) return {ok: false, reason: "player_lacks_from"};
-    // jeśli bank:
-    if ((b[animalTo] ?? 0) < rate.get) return {ok: false, reason: "bank_lacks_to"};
+    if ((p[animalFrom] ?? 0) < rate.give) {
+        return {ok: false, reason: "player_lacks_from"};
+    }
+    if ((b[animalTo] ?? 0) < rate.get) {
+        return {ok: false, reason: "bank_lacks_to"};
+    }
 
-    // dwa ruchy, ale na surowych obiektach, w kontrolowanej kolejności
-    move(p, b, animalFrom, rate.give);
-    move(b, p, animalTo, rate.get);
+    // Execute both transfers - controlled order for atomicity
+    const move1 = move(p, b, animalFrom, rate.give);
+    const move2 = move(b, p, animalTo, rate.get);
 
-    return {ok: true};
+    if (!move1 || !move2) {
+        // This should never happen given the checks above, but safety fallback
+        return {ok: false, reason: "transfer_failed"};
+    }
+
+    return {ok: true, exchanged: {gave: rate.give, got: rate.get}};
 }
 
 export function checkVictoryCondition(player) {
