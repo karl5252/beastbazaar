@@ -212,12 +212,12 @@ describe("game logic tests", () => {
         });
         expect(logic.bankHerd.getHerd()).toEqual({
             "Rabbit": 0, // bank is out of rabbits
-            "Sheep": 0,
-            "Pig": 0,
-            "Cow": 0,
-            "Horse": 0,
-            "Foxhound": 0,
-            "Wolfhound": 0
+            "Sheep": 24,
+            "Pig": 20,
+            "Cow": 12,
+            "Horse": 4,
+            "Foxhound": 4,
+            "Wolfhound": 2
         });
     })
 

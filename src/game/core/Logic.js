@@ -22,57 +22,66 @@ export class Logic {
     }
 
     processDiceRoll(currentPlayer, greenDiceResult, redDiceResult) {
-        // 1. Fox / Wolf attack
-        if (greenDiceResult === "Fox" || redDiceResult === "Fox") {
-            if (this.handleFoxAttack?.(currentPlayer)) {
-                return;
-            }
+        const hasFox = greenDiceResult === "Fox" || redDiceResult === "Fox";
+        const hasWolf = greenDiceResult === "Wolf" || redDiceResult === "Wolf";
+
+        // both
+        if (hasFox && hasWolf) {
+            this.handleFoxAttack(currentPlayer);
+            this.handleWolfAttack(currentPlayer);
+            return;
         }
 
-        if (greenDiceResult === "Wolf" || redDiceResult === "Wolf") {
-            if (this.handleWolfAttack?.(currentPlayer)) {
-                return;
-            }
+        // singular
+        if (hasFox) {
+            this.handleFoxAttack(currentPlayer);
+            return;
+        }
+
+        if (hasWolf) {
+            this.handleWolfAttack(currentPlayer);
+            return;
         }
 
         const herd = currentPlayer.getHerd();
 
-        // 2. Matched dice
         if (greenDiceResult === redDiceResult) {
             const animal = greenDiceResult;
             const currentCount = herd[animal] ?? 0;
             const pairs = Math.floor(currentCount / 2);
 
-            // jeśli nie ma żadnego, dostaje 1
-            const animalsToAdd = Math.max(pairs, 1);
+            const gain = Math.max(pairs, 1);
 
-            this.bankHerd.transfer_animal(currentPlayer, animal, animalsToAdd);
+            const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
+            const actualGain = Math.min(gain, bankCount);
+
+            if (actualGain > 0) {
+                this.bankHerd.transfer_animal(currentPlayer, animal, actualGain);
+            }
             return;
         }
 
-        // 3. Different dice
-
-        // jeśli nie ma żadnych zwierząt, nic się nie dzieje
         const hasAnimals = Object.values(herd).some(count => count > 0);
-        if (!hasAnimals) {
-            return;
-        }
+        if (!hasAnimals) return;
 
-        // dla każdej kości: jeśli gracz ma ten gatunek, dostaje tyle, ile ma par
         [greenDiceResult, redDiceResult].forEach(animal => {
             const currentCount = herd[animal] ?? 0;
-            if (currentCount <= 0) {
-                return;
-            }
+            if (currentCount <= 0) return;
 
             const pairs = Math.floor(currentCount / 2);
-            if (pairs <= 0) {
-                return; // zero par -> zero bonusu
-            }
+            if (pairs <= 0) return;
 
-            this.bankHerd.transfer_animal(currentPlayer, animal, pairs);
+            const gain = pairs;
+
+            const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
+            const actualGain = Math.min(gain, bankCount);
+
+            if (actualGain > 0) {
+                this.bankHerd.transfer_animal(currentPlayer, animal, actualGain);
+            }
         });
     }
+
 
 
     handleFoxAttack(player) {
