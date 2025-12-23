@@ -1,10 +1,19 @@
 import {PlayerState} from "./PlayerState.js";
 import {BANK_MAX} from "../constants/BankConfig.js";
+import {EXCHANGE_RATES} from "../constants/ExchangeRates.js";
+import {WIN_REQUIREMENTS} from "../constants/Constants.js";
 
 export class Logic {
     constructor(players=[]) {
         this.players = players;
         this.currentPlayerIndex = 0;
+        this.turnNumber = 0;
+
+        this.turnState = {
+            hasRolled: false,
+            hasExchanged: false,
+        };
+
         // init bank herd as PLAYER "bank"
         this.bankHerd = new PlayerState("MainHerd", 99)
         this.bankHerd.updateHerd("Rabbit", 60);
@@ -21,7 +30,35 @@ export class Logic {
         this.players.push(player);
     }
 
+    getCurrentPlayer() {
+        return this.players[this.currentPlayerIndex];
+    }
+
+    startTurn() {
+        this.turnState.hasRolled = false;
+        this.turnState.hasExchanged = false;
+    }
+
+    endTurn() {
+        const current = this.getCurrentPlayer();
+
+        if (checkVictoryCondition(current)) {
+            return {ok: true, winnerIndex: current.index};
+        }
+
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+        this.turnNumber += 1;
+        this.startTurn();
+
+        return {ok: true, winnerIndex: null, currentPlayerIndex: this.currentPlayerIndex, turnNumber: this.turnNumber};
+    }
+
     processDiceRoll(currentPlayer, greenDiceResult, redDiceResult) {
+        if (currentPlayer.index !== this.getCurrentPlayer().index) {
+            return {ok: false, reason: "not_your_turn"};
+        }
+        if (this.turnState.hasRolled) return {ok: false, reason: "already_rolled"};
+
         const hasFox = greenDiceResult === "Fox" || redDiceResult === "Fox";
         const hasWolf = greenDiceResult === "Wolf" || redDiceResult === "Wolf";
 
@@ -80,6 +117,9 @@ export class Logic {
                 this.bankHerd.transfer_animal(currentPlayer, animal, actualGain);
             }
         });
+
+        this.turnState.hasRolled = true;
+        return {ok: true};
     }
 
 
@@ -169,6 +209,44 @@ export class Logic {
         return actual;
     }
 
+    exchangeWithBank(animalFrom, animalTo) {
+        const player = this.getCurrentPlayer();
+        if (this.turnState.hasExchanged) return {ok: false, reason: "already_exchanged"};
 
+        const res = exchangeWithBankAtomic({player, bank: this.bankHerd, animalFrom, animalTo});
+        if (res.ok) this.turnState.hasExchanged = true;
 
+        return res;
+    }
+
+}
+
+function move(herdA, herdB, animal, amount) {
+    if ((herdA[animal] ?? 0) < amount) return false;
+    herdA[animal] = (herdA[animal] ?? 0) - amount;
+    herdB[animal] = (herdB[animal] ?? 0) + amount;
+    return true;
+}
+
+export function exchangeWithBankAtomic({player, bank, animalFrom, animalTo}) {
+    const rate = EXCHANGE_RATES[`${animalFrom}->${animalTo}`];
+    if (!rate) return {ok: false, reason: "no_rate"};
+
+    const p = player.getHerd();
+    const b = bank.getHerd();
+
+    if ((p[animalFrom] ?? 0) < rate.give) return {ok: false, reason: "player_lacks_from"};
+    // jeśli bank:
+    if ((b[animalTo] ?? 0) < rate.get) return {ok: false, reason: "bank_lacks_to"};
+
+    // dwa ruchy, ale na surowych obiektach, w kontrolowanej kolejności
+    move(p, b, animalFrom, rate.give);
+    move(b, p, animalTo, rate.get);
+
+    return {ok: true};
+}
+
+export function checkVictoryCondition(player) {
+    const h = player.getHerd();
+    return WIN_REQUIREMENTS.every(a => (h[a] ?? 0) >= 1);
 }

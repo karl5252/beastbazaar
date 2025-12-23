@@ -9,11 +9,11 @@ describe("breeding logic tests", () => {
     beforeEach(() => {
         player = new PlayerState();
         logic = new Logic();
+        logic.addPlayer(player);
+        logic.startTurn();
     });
 
     it("test rule if player herd is empty and dice shows different animals dont update herd", () => {
-        let player = new PlayerState();
-        let logic = new Logic();
 
         // Simulate dice roll with different animals
         logic.processDiceRoll(player, "Rabbit", "Sheep");

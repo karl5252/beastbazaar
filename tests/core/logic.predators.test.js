@@ -9,7 +9,10 @@ describe("predators logic tests", () => {
     beforeEach(() => {
         player = new PlayerState();
         logic = new Logic();
+        logic.addPlayer(player);
+        logic.startTurn();
     });
+
     it("test rule if player has no foxhound and rolls fox he loses all rabbits ONLY", () => {
         setHerd(player, {Rabbit: 1, Sheep: 1, Pig: 1, Cow: 1, Horse: 1, Wolfhound: 1});
         setHerd(logic.bankHerd, {Rabbit: 59});

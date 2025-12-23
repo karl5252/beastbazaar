@@ -9,7 +9,10 @@ describe("bank logic tests", () => {
     beforeEach(() => {
         player = new PlayerState();
         logic = new Logic();
+        logic.addPlayer(player);
+        logic.startTurn();
     });
+
     it("test rule that bank cannot be debited if there is not sufficient amount of animals to transfer should transfer whatever is available", () => {
         // bank has 1 rabbit left
         // player has two pais of rabbits

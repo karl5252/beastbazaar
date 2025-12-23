@@ -3,6 +3,11 @@ module.exports = {
 		browser: true,
 		es2021: true,
 	},
+    globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.vitest,
+    },
 	extends: 'eslint:recommended',
 	overrides: [],
 	parserOptions: {
