@@ -100,4 +100,6 @@ describe("exchange manager logic", () => {
         expect(em.exchangeRequests).toHaveLength(0);
 
     })
+
+    it("Test exchange requests invalidation")
 })

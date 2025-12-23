@@ -1,6 +1,7 @@
 // core/ExchangeManager.js
 
 import {ExchangeRequest} from "./ExchangeRequest.js";
+import {INDEXES} from "../constants/Constants.js";
 
 export class ExchangeManager {
     constructor() {
@@ -64,14 +65,14 @@ export class ExchangeManager {
             }
 
             const requestorHerd = herdProvider?.(r.requestorIndex);
-            const acceptorHerd = r.target?.type === "PLAYER" ? herdProvider?.(r.target.index) : null;
+            const acceptorHerd = r.target?.index !== INDEXES.BANK_INDEX9 ? herdProvider?.(r.target.index) : null;
 
             const v = this.validateForAccept(r, {
                 acceptorIndex: r.target?.index,
                 requestorHerd,
                 acceptorHerd,
                 // BANK walidujesz dopiero po spięciu z bankiem, więc tu go traktujemy jako “pomijamy”
-                skipTargetBalanceCheck: r.target?.type === "BANK",
+                skipTargetBalanceCheck: r.target?.index === INDEXES.BANK_INDEX,
             });
 
             if (!v.ok) r.markInvalid(v.reason);
@@ -125,7 +126,7 @@ export class ExchangeManager {
             // BANK: w tej “odłączonej” wersji nie sprawdzamy stanów banku ani kursów.
             // To dojdzie po spięciu z bankiem i rules.
             if (!skipTargetBalanceCheck) {
-                // placeholder jeśli kiedyś zechcesz mimo wszystko walidować
+                // placeholder
             }
         }
 
