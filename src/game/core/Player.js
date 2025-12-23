@@ -39,7 +39,7 @@ export class Player {
             return false;
         }
         // get available count
-        let availableCount = this.getHerd(animalType, 0);
+        let availableCount = this.getHerd()[animalType] ?? 0;
         if (availableCount >= count) {
             // deduct from sender
             this.herd[animalType] -= count;

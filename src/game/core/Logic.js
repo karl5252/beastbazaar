@@ -46,7 +46,7 @@ export class Logic {
             // jeśli nie ma żadnego, dostaje 1
             const animalsToAdd = Math.max(pairs, 1);
 
-            currentPlayer.updateHerd(animal, currentCount + animalsToAdd);
+            this.bankHerd.transfer_animal(currentPlayer, animal, currentCount + animalsToAdd);
             return;
         }
 
@@ -70,47 +70,44 @@ export class Logic {
                 return; // zero par -> zero bonusu
             }
 
-            currentPlayer.updateHerd(animal, currentCount + pairs);
+            this.bankHerd.transfer_animal(currentPlayer, animal, currentCount + pairs);
         });
     }
 
 
     handleFoxAttack(player) {
-        // fox attacks the player and steals rabbits UNLESS player has foxhound then foxhound is removed and herd is intact
-        const playerHerd = player.getHerd();
-        if ((playerHerd["Foxhound"] ?? 0) > 0) {
-            // remove one foxhound
-            player.updateHerd("Foxhound", playerHerd["Foxhound"] - 1);
-        } else {
-            // steal rabbits
-            const rabbitsCount = playerHerd["Rabbit"] ?? 0;
-            if (rabbitsCount > 0) {
-                // transfer rabbits to bank
-                player.updateHerd("Rabbit", 0);
-                const bankRabbits = this.bankHerd.getHerd()["Rabbit"] ?? 0;
-                this.bankHerd.updateHerd("Rabbit", bankRabbits + rabbitsCount);
-            }
+        const herd = player.getHerd();
+        const foxhounds = herd["Foxhound"] ?? 0;
+
+        if (foxhounds > 0) {
+            player.updateHerd("Foxhound", foxhounds - 1);
+            return true;
         }
+
+        const rabbits = herd["Rabbit"] ?? 0;
+        if (rabbits > 0) {
+            player.transfer_animal(this.bankHerd, "Rabbit", rabbits);
+        }
+        return true;
     }
 
+
     handleWolfAttack(player) {
-        // wolf attacks the player and steals all animals save for hounds and horse UNLESS player has wolfhound then wolfhound is removed and herd is intact
-        const playerHerd = player.getHerd();
-        if ((playerHerd["Wolfhound"] ?? 0) > 0) {
-            // remove one wolfhound
-            player.updateHerd("Wolfhound", playerHerd["Wolfhound"] - 1);
-        } else {
-            // steal all animals except hounds and horse
-            const animalsToSteal = ["Rabbit", "Sheep", "Pig", "Cow"];
-            animalsToSteal.forEach(animal => {
-                const count = playerHerd[animal] ?? 0;
-                if (count > 0) {
-                    // transfer animals to bank
-                    player.updateHerd(animal, 0);
-                    const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
-                    this.bankHerd.updateHerd(animal, bankCount + count);
-                }
-            });
+        const herd = player.getHerd();
+        const wolfhounds = herd["Wolfhound"] ?? 0;
+
+        if (wolfhounds > 0) {
+            player.updateHerd("Wolfhound", wolfhounds - 1);
+            return true;
         }
+
+        ["Rabbit", "Sheep", "Pig", "Cow"].forEach(animal => {
+            const count = herd[animal] ?? 0;
+            if (count > 0) {
+                player.transfer_animal(this.bankHerd, animal, count);
+            }
+        });
+
+        return true;
     }
 }
