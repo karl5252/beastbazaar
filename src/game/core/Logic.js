@@ -46,7 +46,7 @@ export class Logic {
             // jeśli nie ma żadnego, dostaje 1
             const animalsToAdd = Math.max(pairs, 1);
 
-            this.bankHerd.transfer_animal(currentPlayer, animal, currentCount + animalsToAdd);
+            this.bankHerd.transfer_animal(currentPlayer, animal, animalsToAdd);
             return;
         }
 
@@ -70,7 +70,7 @@ export class Logic {
                 return; // zero par -> zero bonusu
             }
 
-            this.bankHerd.transfer_animal(currentPlayer, animal, currentCount + pairs);
+            this.bankHerd.transfer_animal(currentPlayer, animal, pairs);
         });
     }
 

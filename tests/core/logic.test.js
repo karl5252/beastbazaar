@@ -15,7 +15,7 @@ describe("game logic tests", () => {
         let logic = new Logic();
 
         // Simulate dice roll with different animals
-        logic.processDiceRoll(player, ["Rabbit", "Sheep"]);
+        logic.processDiceRoll(player, "Rabbit", "Sheep");
         expect(player.getHerd()).toEqual({
             "Rabbit": 0,
             "Sheep": 0,
