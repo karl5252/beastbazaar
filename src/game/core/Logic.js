@@ -2,10 +2,14 @@ import {PlayerState} from "./PlayerState.js";
 import {BANK_MAX} from "../constants/BankConfig.js";
 import {EXCHANGE_RATES} from "../constants/ExchangeRates.js";
 import {WIN_REQUIREMENTS} from "../constants/Constants.js";
+import {ExchangeManager} from "./ExchangeManager.js";
 
 export class Logic {
-    constructor(players=[]) {
+    constructor(players = [], config = {}) {
         this.players = players;
+        this.config = config;
+        this.exchangeManager = new ExchangeManager();
+
         this.currentPlayerIndex = 0;
         this.turnNumber = 0;
 
@@ -39,7 +43,51 @@ export class Logic {
         this.turnState.hasExchanged = false;
     }
 
+    postTradeRequest({targetIndex, offer, want}) {
+        const p = this.getCurrentPlayer();
+        return this.exchangeManager.postRequest({
+            requestorIndex: p.index,
+            targetIndex,
+            offer,
+            want,
+            createdTurn: this.turnNumber,
+            requestorHerd: p.getHerd(),
+        });
+    }
+
+    acceptTrade({requestId}) {
+        const acceptor = this.getCurrentPlayer();
+
+        const req = this.exchangeManager.exchangeRequests.find(r => r.id === requestId);
+        if (!req) return {ok: false, reason: "request_not_found"};
+
+        const requestor = this.players[req.requestorIndex];
+
+        const acc = this.exchangeManager.acceptRequest({
+            requestId,
+            acceptorIndex: acceptor.index,
+            currentTurn: this.turnNumber,
+            expiryTurns: this.config.tradeExpiry,
+            requestorHerd: requestor.getHerd(),
+            acceptorHerd: acceptor.getHerd(),
+        });
+
+        if (!acc.ok) return {ok: false, reason: acc.reason ?? acc.reason};
+
+        const exec = this.exchangeManager.executeExchange(acc.request, requestor, acceptor);
+        if (!exec.ok) return {ok: false, reason: exec.reason ?? exec.reason};
+
+        return {ok: true, reason: "trade_executed"};
+    }
+
+
     endTurn() {
+        this.exchangeManager.pruneInvalidRequests({
+            currentTurn: this.turnNumber,
+            expiryTurns: this.config.tradeExpiry,
+            herdProvider: (idx) => this.players[idx]?.getHerd(),
+        });
+
         const current = this.getCurrentPlayer();
 
         if (checkVictoryCondition(current)) {
