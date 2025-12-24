@@ -1,6 +1,7 @@
-import {Scene} from 'phaser';
-import {DEPTH} from "../game/constants/Depth.js";
+import {Scene} from "phaser";
 import {t} from "../utils/i18n.js";
+import {GameController} from "../GameController.js";
+import {DEPTH} from "../game/constants/Depth.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -8,49 +9,18 @@ export class GameScene extends Scene {
     }
 
     init(data) {
-        // Store game settings from MenuScene
-        this.gameConfig = {
-            playerCount: data.playerCount || 2,
-            playerNames: data.playerNames || ['Player 1', 'Player 2'],
-            difficulty: data.difficulty || 'easy',
-            tradeExpiry: data.tradeExpiry || 5
-        };
-
-        // Mock game state (will be replaced with Logic later)
-        this.mockState = {
-            currentPlayerIndex: 0,
-            turnNumber: 1,
-            currentPlayerHerd: {
-                Rabbit: 5,
-                Sheep: 2,
-                Pig: 1,
-                Cow: 0,
-                Horse: 0,
-                Foxhound: 1,
-                Wolfhound: 0
-            },
-            bankHerd: {
-                Rabbit: 45,
-                Sheep: 20,
-                Pig: 15,
-                Cow: 10,
-                Horse: 3,
-                Foxhound: 3,
-                Wolfhound: 2
-            },
-            pendingTrades: [
-                {
-                    id: 'trade_1',
-                    requestorName: 'John',
-                    targetName: 'Maria',
-                    offer: {animal: 'Sheep', amount: 3},
-                    want: {animal: 'Rabbit', amount: 6},
-                    turnsLeft: 2
-                }
-            ],
-            hasRolled: false,
-            hasExchanged: false
-        };
+        if (!data || !data.playerCount) {
+            console.warn('[GameScene] No config provided, using TEST config');
+            this.gameConfig = {
+                playerCount: 2,
+                playerNames: ['TestPlayer1', 'TestPlayer2'],
+                difficulty: 'easy',
+                tradeExpiry: 5,
+                debug: true
+            };
+        } else {
+            this.gameConfig = data;
+        }
     }
 
     create() {
@@ -59,7 +29,25 @@ export class GameScene extends Scene {
         // Background
         this.add.rectangle(width / 2, height / 2, width, height, 0xf5deb3);
 
-        // Create UI sections
+        // Inject Phaser's EventEmitter into GameController
+        this.controller = new GameController(
+            this.gameConfig,
+            this.events
+        );
+
+        // Subscribe to events
+        this.events.on('game:state', this.onStateUpdate, this);
+        this.events.on('ui:error', this.onError, this);
+        this.events.on('game:victory', this.onVictory, this);
+
+        // Get initial state synchronously
+        this.currentState = this.controller.getPublicState();
+
+        // Create UI elements with initial state
+        this.createUI();
+    }
+
+    createUI() {
         this.createHUD();
         this.createPlayerHerdDisplay();
         this.createActionButtons();
@@ -72,19 +60,19 @@ export class GameScene extends Scene {
         const hudHeight = 80;
 
         // HUD Background
-        const hudBg = this.add.rectangle(width / 2, hudHeight / 2, width, hudHeight, 0x8b4513)
+        this.add.rectangle(width / 2, hudHeight / 2, width, hudHeight, 0x8b4513)
             .setDepth(DEPTH.HUD);
 
         // Left side - Turn info
         const turnText = this.add.text(20, hudHeight / 2,
-            `${t('game_turn')} ${this.mockState.turnNumber}`, {
+            `${t('game_turn')} ${this.currentState.turnNumber}`, {
                 fontSize: '28px',
                 fontFamily: 'Arial Black',
                 color: '#ffffff'
             }).setOrigin(0, 0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
         // Center - Current player
-        const playerName = this.gameConfig.playerNames[this.mockState.currentPlayerIndex];
+        const playerName = this.currentState.currentPlayerName;
         const playerText = this.add.text(width / 2, hudHeight / 2,
             `🎲 ${playerName}'s ${t('game_turn')}`, {
                 fontSize: '32px',
@@ -105,7 +93,6 @@ export class GameScene extends Scene {
         menuBtn.on('pointerout', () => menuBtn.setScale(1));
         menuBtn.on('pointerdown', () => this.openGameMenu());
 
-        // Store references for updates
         this.hudElements = {
             turnText,
             playerText,
@@ -121,21 +108,20 @@ export class GameScene extends Scene {
         const panelHeight = 160;
 
         // Panel background
-        const panel = this.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0xffffff, 0.9)
+        this.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0xffffff, 0.9)
             .setStrokeStyle(4, 0x8b4513)
             .setDepth(DEPTH.HUD);
 
         // Title
-        const playerName = this.gameConfig.playerNames[this.mockState.currentPlayerIndex];
-        const title = this.add.text(panelX, panelY - panelHeight / 2 + 25,
+        const playerName = this.currentState.currentPlayerName;
+        this.add.text(panelX, panelY - panelHeight / 2 + 25,
             `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`, {
                 fontSize: '28px',
                 fontFamily: 'Arial Black',
                 color: '#8b4513'
             }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        // Animal counts
-        // TODO: before loaidng animal sprites lets use emojis as placeholder.
+        // Animal icons
         const animalIcons = {
             Rabbit: '🐰',
             Sheep: '🐑',
@@ -149,15 +135,15 @@ export class GameScene extends Scene {
         const animals = ['Rabbit', 'Sheep', 'Pig', 'Cow', 'Horse'];
         const dogs = ['Foxhound', 'Wolfhound'];
 
-        // Main animals row
         const startX = panelX - 350;
         const y1 = panelY + 10;
 
         this.herdTexts = {};
 
+        // Main animals
         animals.forEach((animal, i) => {
             const x = startX + (i * 150);
-            const count = this.mockState.currentPlayerHerd[animal];
+            const count = this.currentState.currentPlayerHerd[animal];
 
             const text = this.add.text(x, y1,
                 `${animalIcons[animal]}×${count}`, {
@@ -169,11 +155,11 @@ export class GameScene extends Scene {
             this.herdTexts[animal] = text;
         });
 
-        // Dogs row
+        // Dogs
         const y2 = panelY + 60;
         dogs.forEach((animal, i) => {
             const x = startX + (i * 150);
-            const count = this.mockState.currentPlayerHerd[animal];
+            const count = this.currentState.currentPlayerHerd[animal];
 
             const text = this.add.text(x, y2,
                 `${animalIcons[animal]}×${count}`, {
@@ -192,7 +178,6 @@ export class GameScene extends Scene {
         const y = 420;
         const spacing = 240;
 
-        // Roll Dice button
         this.rollBtn = this.createGameButton(
             centerX - spacing * 1.5, y,
             `${t('game_roll')}\n🎲`,
@@ -200,7 +185,6 @@ export class GameScene extends Scene {
             () => this.onRollDice()
         );
 
-        // Trade button
         this.tradeBtn = this.createGameButton(
             centerX - spacing * 0.5, y,
             `${t('game_trade')}\n🔄`,
@@ -208,7 +192,6 @@ export class GameScene extends Scene {
             () => this.onOpenTrade()
         );
 
-        // Bank button
         this.bankBtn = this.createGameButton(
             centerX + spacing * 0.5, y,
             `${t('game_bank')}\n💰`,
@@ -216,7 +199,6 @@ export class GameScene extends Scene {
             () => this.onOpenBank()
         );
 
-        // End Turn button
         this.endTurnBtn = this.createGameButton(
             centerX + spacing * 1.5, y,
             `${t('game_end_turn')}\n▶▶`,
@@ -224,7 +206,6 @@ export class GameScene extends Scene {
             () => this.onEndTurn()
         );
 
-        // Update button states based on game state
         this.updateButtonStates();
     }
 
@@ -301,18 +282,15 @@ export class GameScene extends Scene {
         const y = 580;
         const barHeight = 60;
 
-        // Background
-        const bg = this.add.rectangle(width / 2, y, width, barHeight, 0xd2b48c, 0.9)
+        this.add.rectangle(width / 2, y, width, barHeight, 0xd2b48c, 0.9)
             .setStrokeStyle(3, 0x8b4513);
 
-        // Bank label
         this.add.text(20, y, '📊 ' + t('game_bank') + ':', {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#8b4513'
         }).setOrigin(0, 0.5);
 
-        // Bank counts
         const animals = ['Rabbit', 'Sheep', 'Pig', 'Cow', 'Horse', 'Foxhound', 'Wolfhound'];
         const icons = ['🐰', '🐑', '🐷', '🐮', '🐴', '🦊🐕', '🐺🐕'];
 
@@ -323,7 +301,7 @@ export class GameScene extends Scene {
 
         animals.forEach((animal, i) => {
             const x = startX + (i * spacing);
-            const count = this.mockState.bankHerd[animal];
+            const count = this.currentState.bankHerd[animal];
 
             const text = this.add.text(x, y,
                 `${icons[i]}×${count}`, {
@@ -343,13 +321,11 @@ export class GameScene extends Scene {
         const panelWidth = width - 40;
         const panelHeight = height - panelY - 20;
 
-        // Background
-        const bg = this.add.rectangle(panelX, panelY + panelHeight / 2,
+        this.add.rectangle(panelX, panelY + panelHeight / 2,
             panelWidth, panelHeight, 0xffffff, 0.9)
             .setStrokeStyle(3, 0x8b4513);
 
-        // Header
-        const tradeCount = this.mockState.pendingTrades.length;
+        const tradeCount = this.currentState.pendingTrades.length;
         this.add.text(30, panelY + 15,
             `📜 ${t('game_pending_trades')} (${tradeCount})`, {
                 fontSize: '24px',
@@ -357,7 +333,6 @@ export class GameScene extends Scene {
                 color: '#8b4513'
             });
 
-        // "See All" button (if needed)
         if (tradeCount > 2) {
             const seeAllBtn = this.add.text(width - 30, panelY + 15,
                 `${t('game_see_all')} ▼`, {
@@ -371,88 +346,67 @@ export class GameScene extends Scene {
             seeAllBtn.on('pointerdown', () => this.openAllTrades());
         }
 
-        // Trade items
         this.tradeItemContainer = this.add.container(0, 0);
-        this.updateTradeFeed();
+        this.updateTradeFeed(this.currentState.pendingTrades);
     }
 
-    updateTradeFeed() {
-        // Clear existing items
+    updateButtonStates() {
+        this.rollBtn.alpha = this.currentState.hasRolled ? 0.5 : 1;
+        this.bankBtn.alpha = this.currentState.hasExchanged ? 0.5 : 1;
+    }
+
+    updateTradeFeed(trades) {
         this.tradeItemContainer.removeAll(true);
 
-        const {width} = this.cameras.main;
         const startY = 770;
         const itemHeight = 80;
 
-        // Show max 2 trades
-        const visibleTrades = this.mockState.pendingTrades.slice(0, 2);
-
-        visibleTrades.forEach((trade, i) => {
+        trades.slice(0, 2).forEach((trade, i) => {
             const y = startY + (i * itemHeight);
-
             this.createTradeItem(30, y, trade);
         });
     }
 
     createTradeItem(x, y, trade) {
-        const {width} = this.cameras.main;
-        const itemWidth = width - 60;
-        const itemHeight = 70;
+        // TODO: Implement trade item display
+        console.log('Creating trade item:', trade);
+    }
 
-        // Background
-        const bg = this.add.rectangle(x + itemWidth / 2, y + itemHeight / 2,
-            itemWidth, itemHeight, 0xf0e68c)
-            .setStrokeStyle(2, 0x8b4513);
+    onStateUpdate(state) {
+        console.log('[GameScene] Received state update:', state);
 
-        // Trade text
-        const tradeText = `${trade.requestorName} → ${trade.targetName}: ` +
-            `${trade.offer.amount}${this.getAnimalIcon(trade.offer.animal)} ` +
-            `${t('game_for')} ` +
-            `${trade.want.amount}${this.getAnimalIcon(trade.want.animal)}`;
+        // Update stored state
+        this.currentState = state;
 
-        const text = this.add.text(x + 20, y + 15, tradeText, {
-            fontSize: '20px',
-            fontFamily: 'Arial',
-            color: '#000000'
+        // Update HUD
+        this.hudElements.turnText.setText(`${t('game_turn')} ${state.turnNumber}`);
+        this.hudElements.playerText.setText(
+            `🎲 ${state.currentPlayerName}'s ${t('game_turn')}`
+        );
+
+        // Update player herd
+        Object.keys(state.currentPlayerHerd).forEach(animal => {
+            const count = state.currentPlayerHerd[animal];
+            if (this.herdTexts[animal]) {
+                this.herdTexts[animal].setText(`${this.getAnimalIcon(animal)}×${count}`);
+                this.herdTexts[animal].setColor(count > 0 ? '#000000' : '#888888');
+            }
         });
 
-        // Expiry text
-        const expiryText = this.add.text(x + 20, y + 45,
-            `${t('game_expires_in')} ${trade.turnsLeft} ${t('game_turns')}`, {
-                fontSize: '16px',
-                fontFamily: 'Arial',
-                color: '#666666'
-            });
+        // Update bank
+        Object.keys(state.bankHerd).forEach(animal => {
+            const count = state.bankHerd[animal];
+            if (this.bankTexts[animal]) {
+                this.bankTexts[animal].setText(`${this.getAnimalIcon(animal)}×${count}`);
+            }
+        });
 
-        // Accept button
-        const acceptBtn = this.add.text(width - 200, y + itemHeight / 2,
-            `✓ ${t('game_accept')}`, {
-                fontSize: '20px',
-                fontFamily: 'Arial Black',
-                color: '#ffffff',
-                backgroundColor: '#00cc00',
-                padding: {x: 16, y: 8}
-            }).setOrigin(0.5).setInteractive({useHandCursor: true});
+        // Update buttons
+        this.rollBtn.alpha = state.hasRolled ? 0.5 : 1;
+        this.bankBtn.alpha = state.hasExchanged ? 0.5 : 1;
 
-        acceptBtn.on('pointerover', () => acceptBtn.setScale(1.05));
-        acceptBtn.on('pointerout', () => acceptBtn.setScale(1));
-        acceptBtn.on('pointerdown', () => this.onAcceptTrade(trade.id));
-
-        // Reject button
-        const rejectBtn = this.add.text(width - 80, y + itemHeight / 2,
-            `✗ ${t('game_reject')}`, {
-                fontSize: '20px',
-                fontFamily: 'Arial Black',
-                color: '#ffffff',
-                backgroundColor: '#cc0000',
-                padding: {x: 16, y: 8}
-            }).setOrigin(0.5).setInteractive({useHandCursor: true});
-
-        rejectBtn.on('pointerover', () => rejectBtn.setScale(1.05));
-        rejectBtn.on('pointerout', () => rejectBtn.setScale(1));
-        rejectBtn.on('pointerdown', () => this.onRejectTrade(trade.id));
-
-        this.tradeItemContainer.add([bg, text, expiryText, acceptBtn, rejectBtn]);
+        // Update trades
+        this.updateTradeFeed(state.pendingTrades);
     }
 
     getAnimalIcon(animal) {
@@ -468,81 +422,45 @@ export class GameScene extends Scene {
         return icons[animal] || '';
     }
 
-    updateButtonStates() {
-        // Disable roll button if already rolled
-        this.rollBtn.alpha = this.mockState.hasRolled ? 0.5 : 1;
-
-        // Disable bank button if already exchanged
-        this.bankBtn.alpha = this.mockState.hasExchanged ? 0.5 : 1;
+    onError(errorResult) {
+        console.error('[GameScene] Error:', errorResult);
+        // TODO: Show error toast
     }
 
-    // ===== Button Callbacks (placeholders) =====
+    onVictory(victoryData) {
+        console.log('[GameScene] Victory!', victoryData);
+        // TODO: Go to victory scene
+    }
 
     onRollDice() {
         console.log('Roll dice clicked');
-        // TODO: Show dice animation, call Logic.processDiceRoll()
-        this.showPlaceholderMessage('Rolling dice...');
-    }
-
-    onOpenTrade() {
-        console.log('Trade clicked');
-        // TODO: Open trade modal
-        this.showPlaceholderMessage('Opening trade modal...');
+        this.controller.rollDice();
     }
 
     onOpenBank() {
         console.log('Bank clicked');
-        // TODO: Open bank exchange modal
-        this.showPlaceholderMessage('Opening bank exchange...');
+    }
+
+    onOpenTrade() {
+        console.log('Trade clicked');
     }
 
     onEndTurn() {
         console.log('End turn clicked');
-        // TODO: Call Logic.endTurn(), update UI
-        this.showPlaceholderMessage('Ending turn...');
-    }
-
-    onAcceptTrade(tradeId) {
-        console.log('Accept trade:', tradeId);
-        // TODO: Call ExchangeManager.acceptRequest()
-        this.showPlaceholderMessage('Accepting trade...');
-    }
-
-    onRejectTrade(tradeId) {
-        console.log('Reject trade:', tradeId);
-        // TODO: Remove trade from list
-        this.showPlaceholderMessage('Rejecting trade...');
+        this.controller.endTurn();
     }
 
     openGameMenu() {
-        console.log('Game menu clicked');
-        // TODO: Open pause/settings modal
-        this.showPlaceholderMessage('Opening menu...');
+        console.log('Menu clicked');
     }
 
     openAllTrades() {
-        console.log('See all trades clicked');
-        // TODO: Open full trades modal
-        this.showPlaceholderMessage('Showing all trades...');
+        console.log('All trades clicked');
     }
 
-    showPlaceholderMessage(message) {
-        const {width, height} = this.cameras.main;
-
-        const toast = this.add.text(width / 2, height / 2, message, {
-            fontSize: '32px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff',
-            backgroundColor: '#000000',
-            padding: {x: 40, y: 20}
-        }).setOrigin(0.5).setDepth(DEPTH.OVERLAY);
-
-        this.tweens.add({
-            targets: toast,
-            alpha: 0,
-            duration: 2000,
-            delay: 500,
-            onComplete: () => toast.destroy()
-        });
+    shutdown() {
+        this.events.off('game:state', this.onStateUpdate, this);
+        this.events.off('ui:error', this.onError, this);
+        this.events.off('game:victory', this.onVictory, this);
     }
 }

@@ -8,8 +8,8 @@ import {MenuScene} from "./scenes/MenuScene.js";
 const config = {
 	type: Phaser.AUTO,
 	parent: 'app',
-	width: 800,
-	height: 600,
+    width: 1024,
+    height: 768,
     pixelArt: false,
     scale: {
         mode: Phaser.Scale.FIT,
