@@ -1,6 +1,7 @@
 import {Scene} from 'phaser';
 import {getLang, setLang, t} from "../utils/i18n.js";
 import {DEPTH} from "../game/constants/Depth.js";
+import {UiButton} from "../ui/uiButton.js";
 
 export class MenuScene extends Scene {
     constructor() {
@@ -319,15 +320,19 @@ export class MenuScene extends Scene {
     createStartButton() {
         const {width} = this.cameras.main;
 
-        const btn = this.createJellyButton(
-            width / 2, 720,
-            t('menu_start_game'),
-            'orange',
-            () => this.startGame(),
-            {width: 400, height: 100, fontSize: '42px'}
-        );
+        const btn = new UiButton(this, width / 2, 720, {
+            key: 'btn_yellow',
+            w: 400,
+            h: 100,
+            slice: 16,
+            text: t('menu_start_game'),
+            textStyle: {fontSize: '42px'},
+            autoSize: false,
+            onClick: () => this.startGame()
+        });
 
-        // Pulse animation
+        this.add.existing(btn);
+
         this.tweens.add({
             targets: btn,
             scaleX: 1.05,
@@ -337,6 +342,7 @@ export class MenuScene extends Scene {
             repeat: -1
         });
     }
+
 
     createJellyButton(x, y, text, color, onClick, opts = {}) {
         const width = opts.width || 200;

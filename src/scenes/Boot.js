@@ -1,6 +1,7 @@
 import {Scene} from 'phaser';
 import {initI18n} from "../utils/i18n.js";
 
+
 export class Boot extends Scene {
     constructor() {
         super('Boot');
@@ -15,6 +16,14 @@ export class Boot extends Scene {
     }
 
     create() {
+        Promise.all([
+            document.fonts.load('400 16px "Nunito"'),
+            document.fonts.load('700 16px "Nunito"')
+        ]).then(() => {
+            console.log('[fonts] Nunito ready:', document.fonts.check('16px "Nunito"'));
+            this.scene.start('Preloader');
+        });
+
         this.scene.start('Preloader');
     }
 }

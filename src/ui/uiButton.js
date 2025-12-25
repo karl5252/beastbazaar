@@ -1,43 +1,27 @@
-// src/ui/UiButton.js
 export class UiButton extends Phaser.GameObjects.Container {
-    /**
-     * @param {Phaser.Scene} scene
-     * @param {number} x
-     * @param {number} y
-     * @param {object} cfg
-     * @param {string} cfg.atlasKey      e.g. 'ui'
-     * @param {string} cfg.frame         e.g. 'btn_pink'
-     * @param {number} cfg.w             initial width (will autosize if autoSize=true)
-     * @param {number} cfg.h             height
-     * @param {number} cfg.slice         corner size (assumes uniform)
-     * @param {string} cfg.text          already translated label (pass t('key'))
-     * @param {object} cfg.textStyle     Phaser text style
-     * @param {number} cfg.paddingX      horizontal padding for autosize
-     * @param {boolean} cfg.autoSize     autosize width to text
-     * @param {Function} cfg.onClick
-     */
     constructor(scene, x, y, cfg) {
         super(scene, x, y);
 
         const {
-            atlasKey,
-            frame,
+            key,
             w = 220,
             h = 64,
             slice = 16,
-            text,
+            text = '',
             textStyle = {},
             paddingX = 48,
             autoSize = true,
             onClick
         } = cfg;
 
-        // Requires NineSlice plugin: scene.add.nineslice(...)
-        this.bg = scene.add.nineslice(0, 0, atlasKey, frame, w, h, slice, slice, slice, slice);
+
+        this.bg = scene.add.nineslice(0, 0, w, h, key, [slice, slice, slice, slice]);
+        this.bg.setOrigin(0.5);
 
         this.label = scene.add.text(0, 0, text, {
-            fontFamily: 'Nunito', // swap later, but pick something rounded
+            fontFamily: 'Nunito',
             fontSize: '24px',
+            fontWeight: '400' | '700',
             color: '#ffffff',
             align: 'center',
             stroke: '#000000',
@@ -47,10 +31,15 @@ export class UiButton extends Phaser.GameObjects.Container {
 
         this.add([this.bg, this.label]);
 
-        // Autosize width to translated text
+        // autosize width for translations if desired
         if (autoSize) {
             const newW = Math.max(w, Math.ceil(this.label.width + paddingX));
-            this.bg.resize(newW, h);
+            // RenderTexture: use setSize + redraw approach (depends on plugin)
+            this.bg.setSize(newW, h);
+            // many RenderTexture-based nineslice plugins need a "resize" or "update" call.
+            // If yours exposes bg.resize(w,h), use that instead.
+            if (typeof this.bg.resize === 'function') this.bg.resize(newW, h);
+
             this.setSize(newW, h);
         } else {
             this.setSize(w, h);
@@ -66,23 +55,37 @@ export class UiButton extends Phaser.GameObjects.Container {
     }
 
     _bindInput(scene, onClick) {
+        const down = {sx: 1.02, sy: 0.94, yOff: 2};
+        const over = {sx: 1.05, sy: 1.05};
+        this._pressedOff = 0;
+
         this.on('pointerover', () => {
             if (!this.enabled) return;
-            scene.tweens.add({targets: this, scaleX: 1.05, scaleY: 1.05, duration: 90});
+            scene.tweens.add({targets: this, scaleX: over.sx, scaleY: over.sy, duration: 90});
         });
 
         this.on('pointerout', () => {
+            this.y -= this._pressedOff;
+            this._pressedOff = 0;
             scene.tweens.add({targets: this, scaleX: 1, scaleY: 1, duration: 90});
         });
 
         this.on('pointerdown', () => {
             if (!this.enabled) return;
+            this.y += down.yOff;
+            this._pressedOff = down.yOff;
+            scene.tweens.add({targets: this, scaleX: down.sx, scaleY: down.sy, duration: 60});
+        });
+
+        this.on('pointerup', () => {
+            if (!this.enabled) return;
+            this.y -= this._pressedOff;
+            this._pressedOff = 0;
             scene.tweens.add({
                 targets: this,
-                scaleX: 0.97,
-                scaleY: 0.97,
-                duration: 60,
-                yoyo: true,
+                scaleX: over.sx,
+                scaleY: over.sy,
+                duration: 80,
                 onComplete: () => onClick && onClick()
             });
         });
@@ -91,20 +94,6 @@ export class UiButton extends Phaser.GameObjects.Container {
     setEnabled(flag) {
         this.enabled = !!flag;
         this.alpha = this.enabled ? 1 : 0.55;
-        // optional: make disabled text darker
-        this.label.setAlpha(this.enabled ? 1 : 0.85);
-        return this;
-    }
-
-    setText(newText, paddingX = 48) {
-        this.label.setText(newText);
-
-        // Resize to new language
-        const newW = Math.max(this.bg.width, Math.ceil(this.label.width + paddingX));
-        this.bg.resize(newW, this.bg.height);
-        this.setSize(newW, this.bg.height);
-        this.input && this.input.hitArea && this.input.hitArea.setTo(-newW / 2, -this.height / 2, newW, this.height);
-
         return this;
     }
 }

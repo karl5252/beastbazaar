@@ -34,5 +34,14 @@
     "game_turns": "turns",
     "game_accept": "Accept",
     "game_reject": "Reject"
+  },
+  "pl": {
+    "menu_start_game": "Rozpocznij grę"
+  },
+  "ru": {
+    "menu_start_game": "Начать игру"
+  },
+  "es": {
+    "menu_start_game": "START GAME"
   }
 }
