@@ -1,3 +1,4 @@
+// game/ui/UiButton.js
 export class UiButton extends Phaser.GameObjects.Container {
     constructor(scene, x, y, cfg) {
         super(scene, x, y);
@@ -14,14 +15,14 @@ export class UiButton extends Phaser.GameObjects.Container {
             onClick
         } = cfg;
 
-
+        // This works perfectly with individual image files
         this.bg = scene.add.nineslice(0, 0, w, h, key, [slice, slice, slice, slice]);
         this.bg.setOrigin(0.5);
 
         this.label = scene.add.text(0, 0, text, {
             fontFamily: 'Nunito',
             fontSize: '24px',
-            fontWeight: '400' | '700',
+            fontWeight: '700',
             color: '#ffffff',
             align: 'center',
             stroke: '#000000',
@@ -31,15 +32,10 @@ export class UiButton extends Phaser.GameObjects.Container {
 
         this.add([this.bg, this.label]);
 
-        // autosize width for translations if desired
         if (autoSize) {
             const newW = Math.max(w, Math.ceil(this.label.width + paddingX));
-            // RenderTexture: use setSize + redraw approach (depends on plugin)
             this.bg.setSize(newW, h);
-            // many RenderTexture-based nineslice plugins need a "resize" or "update" call.
-            // If yours exposes bg.resize(w,h), use that instead.
             if (typeof this.bg.resize === 'function') this.bg.resize(newW, h);
-
             this.setSize(newW, h);
         } else {
             this.setSize(w, h);

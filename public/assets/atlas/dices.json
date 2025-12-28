@@ -1,0 +1,230 @@
+{
+  "textures": [
+    {
+      "image": "dices.png",
+      "format": "RGBA8888",
+      "size": {
+        "w": 2039,
+        "h": 1546
+      },
+      "scale": 1,
+      "frames": [
+        {
+          "filename": "green_fox",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 595,
+            "h": 568
+          },
+          "spriteSourceSize": {
+            "x": 57,
+            "y": 19,
+            "w": 509,
+            "h": 517
+          },
+          "frame": {
+            "x": 1,
+            "y": 1,
+            "w": 509,
+            "h": 517
+          }
+        },
+        {
+          "filename": "green_horse",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 595,
+            "h": 568
+          },
+          "spriteSourceSize": {
+            "x": 31,
+            "y": 43,
+            "w": 508,
+            "h": 517
+          },
+          "frame": {
+            "x": 1,
+            "y": 520,
+            "w": 508,
+            "h": 517
+          }
+        },
+        {
+          "filename": "green_pig",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 595,
+            "h": 568
+          },
+          "spriteSourceSize": {
+            "x": 57,
+            "y": 31,
+            "w": 509,
+            "h": 516
+          },
+          "frame": {
+            "x": 512,
+            "y": 1,
+            "w": 509,
+            "h": 516
+          }
+        },
+        {
+          "filename": "green_rabbit",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 595,
+            "h": 568
+          },
+          "spriteSourceSize": {
+            "x": 57,
+            "y": 35,
+            "w": 509,
+            "h": 516
+          },
+          "frame": {
+            "x": 1023,
+            "y": 1,
+            "w": 509,
+            "h": 516
+          }
+        },
+        {
+          "filename": "red_cow",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 618,
+            "h": 582
+          },
+          "spriteSourceSize": {
+            "x": 30,
+            "y": 29,
+            "w": 504,
+            "h": 512
+          },
+          "frame": {
+            "x": 1534,
+            "y": 1,
+            "w": 504,
+            "h": 512
+          }
+        },
+        {
+          "filename": "green_sheep",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 595,
+            "h": 568
+          },
+          "spriteSourceSize": {
+            "x": 31,
+            "y": 47,
+            "w": 508,
+            "h": 517
+          },
+          "frame": {
+            "x": 511,
+            "y": 520,
+            "w": 508,
+            "h": 517
+          }
+        },
+        {
+          "filename": "red_pig",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 618,
+            "h": 582
+          },
+          "spriteSourceSize": {
+            "x": 60,
+            "y": 29,
+            "w": 504,
+            "h": 512
+          },
+          "frame": {
+            "x": 1021,
+            "y": 519,
+            "w": 504,
+            "h": 512
+          }
+        },
+        {
+          "filename": "red_rabbit",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 618,
+            "h": 582
+          },
+          "spriteSourceSize": {
+            "x": 60,
+            "y": 61,
+            "w": 504,
+            "h": 512
+          },
+          "frame": {
+            "x": 1527,
+            "y": 519,
+            "w": 504,
+            "h": 512
+          }
+        },
+        {
+          "filename": "red_sheep",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 618,
+            "h": 582
+          },
+          "spriteSourceSize": {
+            "x": 30,
+            "y": 61,
+            "w": 504,
+            "h": 512
+          },
+          "frame": {
+            "x": 1021,
+            "y": 1033,
+            "w": 504,
+            "h": 512
+          }
+        },
+        {
+          "filename": "red_wolf",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 618,
+            "h": 582
+          },
+          "spriteSourceSize": {
+            "x": 60,
+            "y": 14,
+            "w": 504,
+            "h": 512
+          },
+          "frame": {
+            "x": 1527,
+            "y": 1033,
+            "w": 504,
+            "h": 512
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "3.0",
+    "smartupdate": "$TexturePacker:SmartUpdate:4e40b31df972195de139d544cb2af450:599d7521181ba71faefc961f96689a31:ae0d95a256dcb3646846db4fb67d12e9$"
+  }
+}

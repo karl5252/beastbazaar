@@ -1,0 +1,167 @@
+{
+  "textures": [
+    {
+      "image": "buttons.png",
+      "format": "RGBA8888",
+      "size": {
+        "w": 1392,
+        "h": 614
+      },
+      "scale": 1,
+      "frames": [
+        {
+          "filename": "title",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 1158,
+            "h": 635
+          },
+          "spriteSourceSize": {
+            "x": 11,
+            "y": 8,
+            "w": 1137,
+            "h": 612
+          },
+          "frame": {
+            "x": 1,
+            "y": 1,
+            "w": 1137,
+            "h": 612
+          }
+        },
+        {
+          "filename": "btn_green",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 251,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 1,
+            "w": 251,
+            "h": 90
+          }
+        },
+        {
+          "filename": "btn_orange",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 251,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 93,
+            "w": 251,
+            "h": 90
+          }
+        },
+        {
+          "filename": "btn_teal",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 251,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 185,
+            "w": 251,
+            "h": 90
+          }
+        },
+        {
+          "filename": "btn_violet",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 251,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 277,
+            "w": 251,
+            "h": 90
+          }
+        },
+        {
+          "filename": "btn_pink",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 250,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 369,
+            "w": 250,
+            "h": 90
+          }
+        },
+        {
+          "filename": "btn_yellow",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 256,
+            "h": 96
+          },
+          "spriteSourceSize": {
+            "x": 3,
+            "y": 3,
+            "w": 250,
+            "h": 90
+          },
+          "frame": {
+            "x": 1140,
+            "y": 461,
+            "w": 250,
+            "h": 90
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "3.0",
+    "smartupdate": "$TexturePacker:SmartUpdate:08a8d33c10968c7a45e5773b1fec1850:f1af234b5c9496dac83cdf877b494e2d:b34c8670b11bb20cb1751a70d3683e22$"
+  }
+}

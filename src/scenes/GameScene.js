@@ -1,5 +1,7 @@
+// game/scenes/GameScene.js
 import {Scene} from "phaser";
 import {t} from "../utils/i18n.js";
+import {UiButton} from "../ui/UiButton.js";
 import {GameController} from "../GameController.js";
 import {DEPTH} from "../game/constants/Depth.js";
 
@@ -59,11 +61,9 @@ export class GameScene extends Scene {
         const {width} = this.cameras.main;
         const hudHeight = 80;
 
-        // HUD Background
         this.add.rectangle(width / 2, hudHeight / 2, width, hudHeight, 0x8b4513)
             .setDepth(DEPTH.HUD);
 
-        // Left side - Turn info
         const turnText = this.add.text(20, hudHeight / 2,
             `${t('game_turn')} ${this.currentState.turnNumber}`, {
                 fontSize: '28px',
@@ -71,7 +71,6 @@ export class GameScene extends Scene {
                 color: '#ffffff'
             }).setOrigin(0, 0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        // Center - Current player
         const playerName = this.currentState.currentPlayerName;
         const playerText = this.add.text(width / 2, hudHeight / 2,
             `🎲 ${playerName}'s ${t('game_turn')}`, {
@@ -82,7 +81,6 @@ export class GameScene extends Scene {
                 strokeThickness: 4
             }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        // Right side - Settings/Menu button
         const menuBtn = this.add.text(width - 20, hudHeight / 2, '⚙️', {
             fontSize: '36px'
         }).setOrigin(1, 0.5)
@@ -93,11 +91,7 @@ export class GameScene extends Scene {
         menuBtn.on('pointerout', () => menuBtn.setScale(1));
         menuBtn.on('pointerdown', () => this.openGameMenu());
 
-        this.hudElements = {
-            turnText,
-            playerText,
-            menuBtn
-        };
+        this.hudElements = {turnText, playerText, menuBtn};
     }
 
     createPlayerHerdDisplay() {
@@ -107,12 +101,10 @@ export class GameScene extends Scene {
         const panelWidth = 900;
         const panelHeight = 160;
 
-        // Panel background
         this.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0xffffff, 0.9)
             .setStrokeStyle(4, 0x8b4513)
             .setDepth(DEPTH.HUD);
 
-        // Title
         const playerName = this.currentState.currentPlayerName;
         this.add.text(panelX, panelY - panelHeight / 2 + 25,
             `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`, {
@@ -121,54 +113,59 @@ export class GameScene extends Scene {
                 color: '#8b4513'
             }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        // Animal icons
-        const animalIcons = {
-            Rabbit: '🐰',
-            Sheep: '🐑',
-            Pig: '🐷',
-            Cow: '🐮',
-            Horse: '🐴',
-            Foxhound: '🦊🐕',
-            Wolfhound: '🐺🐕'
-        };
-
-        const animals = ['Rabbit', 'Sheep', 'Pig', 'Cow', 'Horse'];
-        const dogs = ['Foxhound', 'Wolfhound'];
+        // Use animal sprites from atlas instead of emojis
+        const animals = ['rabbit', 'sheep', 'pig', 'cow', 'horse'];
+        const dogs = ['foxhound', 'wolfhound'];
 
         const startX = panelX - 350;
         const y1 = panelY + 10;
 
+        this.herdSprites = {};
         this.herdTexts = {};
 
-        // Main animals
+        // Main animals row
         animals.forEach((animal, i) => {
             const x = startX + (i * 150);
-            const count = this.currentState.currentPlayerHerd[animal];
+            const animalKey = animal.charAt(0).toUpperCase() + animal.slice(1); // Capitalize
+            const count = this.currentState.currentPlayerHerd[animalKey];
 
-            const text = this.add.text(x, y1,
-                `${animalIcons[animal]}×${count}`, {
-                    fontSize: '32px',
-                    fontFamily: 'Arial',
+            // Animal sprite
+            const sprite = this.add.sprite(x - 20, y1, 'animals', animal)
+                .setScale(0.1)
+                .setDepth(DEPTH.HUD_ELEMENTS);
+
+            // Count text
+            const text = this.add.text(x + 30, y1,
+                `×${count}`, {
+                    fontSize: '28px',
+                    fontFamily: 'Arial Black',
                     color: count > 0 ? '#000000' : '#888888'
-                }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
+                }).setOrigin(0, 0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-            this.herdTexts[animal] = text;
+            this.herdSprites[animalKey] = sprite;
+            this.herdTexts[animalKey] = text;
         });
 
-        // Dogs
+        // Dogs row
         const y2 = panelY + 60;
         dogs.forEach((animal, i) => {
             const x = startX + (i * 150);
-            const count = this.currentState.currentPlayerHerd[animal];
+            const animalKey = animal.charAt(0).toUpperCase() + animal.slice(1);
+            const count = this.currentState.currentPlayerHerd[animalKey];
 
-            const text = this.add.text(x, y2,
-                `${animalIcons[animal]}×${count}`, {
-                    fontSize: '28px',
+            const sprite = this.add.sprite(x - 20, y2, 'animals', animal)
+                .setScale(0.08)
+                .setDepth(DEPTH.HUD_ELEMENTS);
+
+            const text = this.add.text(x + 30, y2,
+                `×${count}`, {
+                    fontSize: '24px',
                     fontFamily: 'Arial',
                     color: count > 0 ? '#000000' : '#888888'
-                }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
+                }).setOrigin(0, 0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-            this.herdTexts[animal] = text;
+            this.herdSprites[animalKey] = sprite;
+            this.herdTexts[animalKey] = text;
         });
     }
 
@@ -178,103 +175,63 @@ export class GameScene extends Scene {
         const y = 420;
         const spacing = 240;
 
-        this.rollBtn = this.createGameButton(
-            centerX - spacing * 1.5, y,
-            `${t('game_roll')}\n🎲`,
-            'orange',
-            () => this.onRollDice()
-        );
+        // Roll Dice button
+        this.rollBtn = new UiButton(this, centerX - spacing * 1.5, y, {
+            atlas: 'buttons',
+            key: 'btn_orange',
+            w: 200,
+            h: 120,
+            slice: 16,
+            text: `${t('game_roll')}\n🎲`,
+            textStyle: {fontSize: '24px'},
+            autoSize: false,
+            onClick: () => this.onRollDice()
+        });
+        this.add.existing(this.rollBtn);
 
-        this.tradeBtn = this.createGameButton(
-            centerX - spacing * 0.5, y,
-            `${t('game_trade')}\n🔄`,
-            'purple',
-            () => this.onOpenTrade()
-        );
+        // Trade button
+        this.tradeBtn = new UiButton(this, centerX - spacing * 0.5, y, {
+            atlas: 'buttons',
+            key: 'btn_violet',
+            w: 200,
+            h: 120,
+            slice: 16,
+            text: `${t('game_trade')}\n🔄`,
+            textStyle: {fontSize: '24px'},
+            autoSize: false,
+            onClick: () => this.onOpenTrade()
+        });
+        this.add.existing(this.tradeBtn);
 
-        this.bankBtn = this.createGameButton(
-            centerX + spacing * 0.5, y,
-            `${t('game_bank')}\n💰`,
-            'teal',
-            () => this.onOpenBank()
-        );
+        // Bank button
+        this.bankBtn = new UiButton(this, centerX + spacing * 0.5, y, {
+            atlas: 'buttons',
+            key: 'btn_teal',
+            w: 200,
+            h: 120,
+            slice: 16,
+            text: `${t('game_bank')}\n💰`,
+            textStyle: {fontSize: '24px'},
+            autoSize: false,
+            onClick: () => this.onOpenBank()
+        });
+        this.add.existing(this.bankBtn);
 
-        this.endTurnBtn = this.createGameButton(
-            centerX + spacing * 1.5, y,
-            `${t('game_end_turn')}\n▶▶`,
-            'yellow',
-            () => this.onEndTurn()
-        );
+        // End Turn button
+        this.endTurnBtn = new UiButton(this, centerX + spacing * 1.5, y, {
+            atlas: 'buttons',
+            key: 'btn_yellow',
+            w: 200,
+            h: 120,
+            slice: 16,
+            text: `${t('game_end_turn')}\n▶▶`,
+            textStyle: {fontSize: '24px'},
+            autoSize: false,
+            onClick: () => this.onEndTurn()
+        });
+        this.add.existing(this.endTurnBtn);
 
         this.updateButtonStates();
-    }
-
-    createGameButton(x, y, text, color, onClick) {
-        const width = 200;
-        const height = 120;
-
-        const container = this.add.container(x, y);
-
-        const colorMap = {
-            orange: 0xff6600,
-            teal: 0x00cccc,
-            purple: 0x9370db,
-            yellow: 0xffaa00
-        };
-
-        const bg = this.add.rectangle(0, 0, width, height, colorMap[color] || 0x888888)
-            .setStrokeStyle(6, 0xffffff);
-
-        const label = this.add.text(0, 0, text, {
-            fontSize: '24px',
-            fontFamily: 'Arial Black',
-            color: '#ffffff',
-            align: 'center',
-            stroke: '#000000',
-            strokeThickness: 3
-        }).setOrigin(0.5);
-
-        container.add([bg, label]);
-        container.setSize(width, height);
-        container.setInteractive(
-            new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
-            Phaser.Geom.Rectangle.Contains
-        );
-
-        container.on('pointerover', () => {
-            if (container.alpha === 1) {
-                this.tweens.add({
-                    targets: container,
-                    scaleX: 1.05,
-                    scaleY: 1.05,
-                    duration: 100
-                });
-            }
-        });
-
-        container.on('pointerout', () => {
-            this.tweens.add({
-                targets: container,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 100
-            });
-        });
-
-        container.on('pointerdown', () => {
-            if (container.alpha === 1) {
-                this.tweens.add({
-                    targets: container,
-                    scaleX: 0.95,
-                    scaleY: 0.95,
-                    duration: 50,
-                    yoyo: true,
-                    onComplete: onClick
-                });
-            }
-        });
-
-        return container;
     }
 
     createBankStatusBar() {
@@ -291,26 +248,33 @@ export class GameScene extends Scene {
             color: '#8b4513'
         }).setOrigin(0, 0.5);
 
-        const animals = ['Rabbit', 'Sheep', 'Pig', 'Cow', 'Horse', 'Foxhound', 'Wolfhound'];
-        const icons = ['🐰', '🐑', '🐷', '🐮', '🐴', '🦊🐕', '🐺🐕'];
+        const animals = ['rabbit', 'sheep', 'pig', 'cow', 'horse', 'foxhound', 'wolfhound'];
 
         const startX = 180;
         const spacing = 120;
 
+        this.bankSprites = {};
         this.bankTexts = {};
 
         animals.forEach((animal, i) => {
             const x = startX + (i * spacing);
-            const count = this.currentState.bankHerd[animal];
+            const animalKey = animal.charAt(0).toUpperCase() + animal.slice(1);
+            const count = this.currentState.bankHerd[animalKey];
 
-            const text = this.add.text(x, y,
-                `${icons[i]}×${count}`, {
-                    fontSize: '20px',
+            // Sprite
+            const sprite = this.add.sprite(x - 15, y, 'animals', animal)
+                .setScale(0.06);
+
+            // Count
+            const text = this.add.text(x + 20, y,
+                `×${count}`, {
+                    fontSize: '18px',
                     fontFamily: 'Arial',
                     color: '#000000'
                 }).setOrigin(0, 0.5);
 
-            this.bankTexts[animal] = text;
+            this.bankSprites[animalKey] = sprite;
+            this.bankTexts[animalKey] = text;
         });
     }
 
@@ -333,49 +297,23 @@ export class GameScene extends Scene {
                 color: '#8b4513'
             });
 
-        if (tradeCount > 2) {
-            const seeAllBtn = this.add.text(width - 30, panelY + 15,
-                `${t('game_see_all')} ▼`, {
-                    fontSize: '20px',
-                    fontFamily: 'Arial',
-                    color: '#0066cc'
-                }).setOrigin(1, 0).setInteractive({useHandCursor: true});
-
-            seeAllBtn.on('pointerover', () => seeAllBtn.setScale(1.05));
-            seeAllBtn.on('pointerout', () => seeAllBtn.setScale(1));
-            seeAllBtn.on('pointerdown', () => this.openAllTrades());
-        }
-
         this.tradeItemContainer = this.add.container(0, 0);
         this.updateTradeFeed(this.currentState.pendingTrades);
     }
 
     updateButtonStates() {
-        this.rollBtn.alpha = this.currentState.hasRolled ? 0.5 : 1;
-        this.bankBtn.alpha = this.currentState.hasExchanged ? 0.5 : 1;
+        this.rollBtn.setEnabled(!this.currentState.hasRolled);
+        this.bankBtn.setEnabled(!this.currentState.hasExchanged);
     }
 
     updateTradeFeed(trades) {
         this.tradeItemContainer.removeAll(true);
-
-        const startY = 770;
-        const itemHeight = 80;
-
-        trades.slice(0, 2).forEach((trade, i) => {
-            const y = startY + (i * itemHeight);
-            this.createTradeItem(30, y, trade);
-        });
-    }
-
-    createTradeItem(x, y, trade) {
-        // TODO: Implement trade item display
-        console.log('Creating trade item:', trade);
+        // TODO: Create trade items
     }
 
     onStateUpdate(state) {
         console.log('[GameScene] Received state update:', state);
 
-        // Update stored state
         this.currentState = state;
 
         // Update HUD
@@ -388,8 +326,11 @@ export class GameScene extends Scene {
         Object.keys(state.currentPlayerHerd).forEach(animal => {
             const count = state.currentPlayerHerd[animal];
             if (this.herdTexts[animal]) {
-                this.herdTexts[animal].setText(`${this.getAnimalIcon(animal)}×${count}`);
+                this.herdTexts[animal].setText(`×${count}`);
                 this.herdTexts[animal].setColor(count > 0 ? '#000000' : '#888888');
+            }
+            if (this.herdSprites[animal]) {
+                this.herdSprites[animal].setAlpha(count > 0 ? 1 : 0.3);
             }
         });
 
@@ -397,39 +338,24 @@ export class GameScene extends Scene {
         Object.keys(state.bankHerd).forEach(animal => {
             const count = state.bankHerd[animal];
             if (this.bankTexts[animal]) {
-                this.bankTexts[animal].setText(`${this.getAnimalIcon(animal)}×${count}`);
+                this.bankTexts[animal].setText(`×${count}`);
             }
         });
 
         // Update buttons
-        this.rollBtn.alpha = state.hasRolled ? 0.5 : 1;
-        this.bankBtn.alpha = state.hasExchanged ? 0.5 : 1;
+        this.rollBtn.setEnabled(!state.hasRolled);
+        this.bankBtn.setEnabled(!state.hasExchanged);
 
         // Update trades
         this.updateTradeFeed(state.pendingTrades);
     }
 
-    getAnimalIcon(animal) {
-        const icons = {
-            Rabbit: '🐰',
-            Sheep: '🐑',
-            Pig: '🐷',
-            Cow: '🐮',
-            Horse: '🐴',
-            Foxhound: '🦊🐕',
-            Wolfhound: '🐺🐕'
-        };
-        return icons[animal] || '';
-    }
-
     onError(errorResult) {
         console.error('[GameScene] Error:', errorResult);
-        // TODO: Show error toast
     }
 
     onVictory(victoryData) {
         console.log('[GameScene] Victory!', victoryData);
-        // TODO: Go to victory scene
     }
 
     onRollDice() {
@@ -452,10 +378,6 @@ export class GameScene extends Scene {
 
     openGameMenu() {
         console.log('Menu clicked');
-    }
-
-    openAllTrades() {
-        console.log('All trades clicked');
     }
 
     shutdown() {
