@@ -111,15 +111,21 @@ export class MenuScene extends Scene {
         const centerX = width / 2;
         const y = 280;
 
+        // Player count label - Add background or change color
         this.add.text(centerX - 200, y, t('menu_players'), {
             fontSize: '32px',
-            color: '#000000'
+            fontFamily: 'Arial Black',
+            color: '#ffffff',          // White text
+            stroke: '#000000',         // Black outline
+            strokeThickness: 6
         }).setOrigin(0, 0.5);
 
         this.playerCountText = this.add.text(centerX - 80, y, '2', {
             fontSize: '48px',
-            color: '#8b4513',
-            fontFamily: 'Arial Black'
+            color: '#ffffff',          // White
+            fontFamily: 'Arial Black',
+            stroke: '#000000',
+            strokeThickness: 6
         }).setOrigin(0.5);
 
         // Use UiButton for +/- buttons
@@ -151,7 +157,10 @@ export class MenuScene extends Scene {
         // Name inputs
         this.add.text(centerX + 50, y - 20, t('menu_names_optional'), {
             fontSize: '20px',
-            color: '#666666'
+            fontFamily: 'Arial Black',
+            color: '#ffffff',          // White
+            stroke: '#000000',
+            strokeThickness: 4
         });
 
         this.playerNameInputs = [];
@@ -205,7 +214,10 @@ export class MenuScene extends Scene {
 
         this.add.text(centerX, y - 40, t('menu_difficulty'), {
             fontSize: '32px',
-            color: '#000000'
+            fontFamily: 'Arial Black',
+            color: '#ffffff',          // White
+            stroke: '#000000',
+            strokeThickness: 6
         }).setOrigin(0.5);
 
         this.easyBtn = new UiButton(this, centerX - 120, y, {
@@ -244,9 +256,13 @@ export class MenuScene extends Scene {
 
         this.add.text(centerX, y - 40, t('menu_trade_expiry'), {
             fontSize: '32px',
-            color: '#000000'
+            fontFamily: 'Arial Black',
+            color: '#ffffff',          // White
+            stroke: '#000000',
+            strokeThickness: 6
         }).setOrigin(0.5);
 
+        // Slider track
         const sliderBg = this.add.rectangle(centerX, y, 300, 20, 0x888888)
             .setStrokeStyle(2, 0x444444);
 
@@ -257,14 +273,27 @@ export class MenuScene extends Scene {
         this.expiryText = this.add.text(centerX, y + 40,
             `${this.gameSettings.tradeExpiry} ${t('menu_turns')}`, {
                 fontSize: '28px',
-                color: '#000000'
+                fontFamily: 'Arial Black',
+                color: '#ffffff',      // White
+                stroke: '#000000',
+                strokeThickness: 5
             }).setOrigin(0.5);
 
+        // Range labels
         this.add.text(centerX - 150, y + 25, '3', {
-            fontSize: '20px', color: '#666666'
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
         }).setOrigin(0.5);
+
         this.add.text(centerX + 150, y + 25, '7', {
-            fontSize: '20px', color: '#666666'
+            fontSize: '20px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
         }).setOrigin(0.5);
 
         sliderHandle.on('drag', (pointer, dragX) => {
