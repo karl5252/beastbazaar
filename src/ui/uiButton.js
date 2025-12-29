@@ -126,6 +126,24 @@ export class UiButton extends Phaser.GameObjects.Container {
         return this;
     }
 
+    setHighlighted(flag) {
+        this.highlighted = !!flag;
+
+        if (this.highlighted) {
+            // Add a colored border/glow effect
+            if (this.bg) {
+                this.bg.setTint(0xffff99); // Light yellow tint
+            }
+        } else {
+            // Remove tint
+            if (this.bg) {
+                this.bg.clearTint();
+            }
+        }
+
+        return this;
+    }
+
     setText(newText) {
         if (this.label) {
             this.label.setText(newText);

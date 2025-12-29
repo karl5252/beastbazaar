@@ -39,7 +39,13 @@
     "bank_trade_instructions": "Trade animals with the bank at the following rates:",
     "bank_give": "You give:",
     "bank_receive": "You receive:",
-    "bank_confirm": "CONFIRM TRADE"
+    "bank_confirm": "CONFIRM TRADE",
+    "player_trade_title": "TRADE WITH PLAYER {player}",
+    "player_trade_instructions": "Propose a trade to {player}:",
+    "trade_with": "Trade with {player}",
+    "trade_you_offer": "Your Offer:",
+    "trade_you_want": "You Want:",
+    "trade_create_offer": "CREATE OFFER"
   },
   "pl": {
     "menu_start_game": "Rozpocznij grę"

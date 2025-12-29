@@ -139,7 +139,7 @@ export class GameController {
         });
     }
 
-    postTradeRequest(targetIndex, offer, want) {
+    postTradeRequest({targetIndex, offer, want}) {
         return this.dispatch(() => {
             return this.logic.postTradeRequest({targetIndex, offer, want});
         });

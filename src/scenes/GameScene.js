@@ -5,6 +5,7 @@ import {UiButton} from "../ui/UiButton.js";
 import {GameController} from "../GameController.js";
 import {DEPTH} from "../game/constants/Depth.js";
 import {BankTradeModal} from "../ui/BankTradeModal.js";
+import {PlayerTradeModal} from "../ui/PlayerTradeModal.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -417,9 +418,9 @@ export class GameScene extends Scene {
             this.activeModal = null;
         }
 
-        // TODO: Create player trade modal
-        // this.activeModal = new PlayerTradeModal(this, this.controller);
-        // this.add.existing(this.activeModal);
+        // Create player trade modal
+        this.activeModal = new PlayerTradeModal(this, this.controller);
+        this.add.existing(this.activeModal);
     }
 
     onEndTurn() {
