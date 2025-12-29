@@ -111,25 +111,19 @@ export class MenuScene extends Scene {
         const centerX = width / 2;
         const y = 280;
 
-        // Player count label - Add background or change color
-        this.add.text(centerX - 200, y, t('menu_players'), {
+        // ===== Row 1: Player Count Controls (all horizontal) =====
+
+        // "Players:" label on the left
+        this.add.text(centerX - 250, y, t('menu_players'), {
             fontSize: '32px',
             fontFamily: 'Arial Black',
-            color: '#ffffff',          // White text
-            stroke: '#000000',         // Black outline
+            color: '#ffffff',
+            stroke: '#000000',
             strokeThickness: 6
         }).setOrigin(0, 0.5);
 
-        this.playerCountText = this.add.text(centerX - 80, y, '2', {
-            fontSize: '48px',
-            color: '#ffffff',          // White
-            fontFamily: 'Arial Black',
-            stroke: '#000000',
-            strokeThickness: 6
-        }).setOrigin(0.5);
-
-        // Use UiButton for +/- buttons
-        const minusBtn = new UiButton(this, centerX - 130, y, {
+        // Minus button
+        const minusBtn = new UiButton(this, centerX + 10, y, {
             key: 'btn_orange',
             w: 50,
             h: 50,
@@ -141,8 +135,17 @@ export class MenuScene extends Scene {
         });
         this.add.existing(minusBtn);
 
-        const plusBtn = new UiButton(this, centerX - 30, y, {
-            atlas: 'buttons',
+        // Player count display (between buttons)
+        this.playerCountText = this.add.text(centerX + 60, y, '2', {
+            fontSize: '48px',
+            color: '#ffffff',
+            fontFamily: 'Arial Black',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5);
+
+        // Plus button
+        const plusBtn = new UiButton(this, centerX + 110, y, {
             key: 'btn_teal',
             w: 50,
             h: 50,
@@ -154,19 +157,28 @@ export class MenuScene extends Scene {
         });
         this.add.existing(plusBtn);
 
-        // Name inputs
-        this.add.text(centerX + 50, y - 20, t('menu_names_optional'), {
+        // ===== Row 2: Player Names (below) =====
+
+        const namesY = y + 70;  // 70px below player count row
+
+        // "Names (optional)" label
+        this.add.text(centerX - 250, namesY, t('menu_names_optional'), {
             fontSize: '20px',
             fontFamily: 'Arial Black',
-            color: '#ffffff',          // White
+            color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
-        });
+        }).setOrigin(0, 0.5);
 
+        // Name input buttons (side by side)
         this.playerNameInputs = [];
+        const nameStartX = centerX + 50;
+        const nameSpacing = 110;
+
         for (let i = 0; i < 4; i++) {
             const nameBtn = this.createNameButton(
-                centerX + 150 + (i * 120), y + 10,
+                nameStartX + (i * nameSpacing),
+                namesY,
                 i
             );
             this.playerNameInputs.push(nameBtn);
@@ -174,6 +186,39 @@ export class MenuScene extends Scene {
     }
 
     createNameButton(x, y, index) {
+        const nameBtn = new UiButton(this, x, y, {
+            key: 'btn_violet',
+            w: 100,
+            h: 40,
+            slice: 16,
+            text: `P${index + 1}`,
+            textStyle: {fontSize: '20px'},
+            autoSize: false,
+            onClick: () => {
+                if (index < this.gameSettings.playerCount) {
+                    this.openNameInput(index, nameBtn);
+                }
+            }
+        });
+
+        this.add.existing(nameBtn);
+        nameBtn.visible = index < this.gameSettings.playerCount;
+        return nameBtn;
+    }
+
+    openNameInput(index, btnObj) {
+        const currentName = this.gameSettings.playerNames[index];
+        const newName = prompt(t('menu_enter_player_name', {number: index + 1}), currentName);
+
+        if (newName && newName.trim()) {
+            const trimmedName = newName.trim().slice(0, 12);
+            this.gameSettings.playerNames[index] = trimmedName;
+            const displayName = trimmedName.length > 8 ? trimmedName.slice(0, 8) + '...' : trimmedName;
+            btnObj.label.setText(displayName);
+        }
+    }
+
+    /*createNameButton(x, y, index) {
         // Use UiButton for name buttons
         const nameBtn = new UiButton(this, x, y, {
             atlas: 'buttons',
@@ -205,14 +250,14 @@ export class MenuScene extends Scene {
             const displayName = trimmedName.length > 8 ? trimmedName.slice(0, 8) + '...' : trimmedName;
             btnObj.label.setText(displayName);
         }
-    }
+    */
 
     createDifficultySelector() {
         const {width} = this.cameras.main;
         const centerX = width / 2;
         const y = 400;
 
-        this.add.text(centerX, y - 40, t('menu_difficulty'), {
+        this.add.text(centerX, y, t('menu_difficulty'), {
             fontSize: '32px',
             fontFamily: 'Arial Black',
             color: '#ffffff',          // White
@@ -220,7 +265,7 @@ export class MenuScene extends Scene {
             strokeThickness: 6
         }).setOrigin(0.5);
 
-        this.easyBtn = new UiButton(this, centerX - 120, y, {
+        this.easyBtn = new UiButton(this, centerX - 120, y + 40, {
             atlas: 'buttons',
             key: 'btn_violet',
             w: 160,
@@ -234,7 +279,7 @@ export class MenuScene extends Scene {
         this.add.existing(this.easyBtn);
         this.easyBtn.setEnabled(true);
 
-        this.mediumBtn = new UiButton(this, centerX + 120, y, {
+        this.mediumBtn = new UiButton(this, centerX + 120, y + 40, {
             atlas: 'buttons',
             key: 'btn_yellow',
             w: 160,
