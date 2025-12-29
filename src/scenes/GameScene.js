@@ -4,6 +4,7 @@ import {t} from "../utils/i18n.js";
 import {UiButton} from "../ui/UiButton.js";
 import {GameController} from "../GameController.js";
 import {DEPTH} from "../game/constants/Depth.js";
+import {BankTradeModal} from "../ui/BankTradeModal.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -392,6 +393,8 @@ export class GameScene extends Scene {
 
     onOpenBank() {
         console.log('Bank clicked');
+        const modal = new BankTradeModal(this, this.controller);
+        this.add.existing(modal);
     }
 
     onOpenTrade() {
