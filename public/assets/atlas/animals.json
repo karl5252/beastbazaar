@@ -1,0 +1,245 @@
+{
+  "textures": [
+    {
+      "image": "animals-0.png",
+      "format": "RGBA8888",
+      "size": {
+        "w": 1955,
+        "h": 791
+      },
+      "scale": 1,
+      "frames": [
+        {
+          "filename": "horse",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 609,
+            "h": 466
+          },
+          "spriteSourceSize": {
+            "x": 1,
+            "y": 9,
+            "w": 602,
+            "h": 444
+          },
+          "frame": {
+            "x": 1,
+            "y": 1,
+            "w": 602,
+            "h": 444
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "cow",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 594,
+            "h": 434
+          },
+          "spriteSourceSize": {
+            "x": 10,
+            "y": 5,
+            "w": 580,
+            "h": 428
+          },
+          "frame": {
+            "x": 605,
+            "y": 1,
+            "w": 580,
+            "h": 428
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "wolf",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 594,
+            "h": 434
+          },
+          "spriteSourceSize": {
+            "x": 98,
+            "y": 10,
+            "w": 397,
+            "h": 414
+          },
+          "frame": {
+            "x": 1187,
+            "y": 1,
+            "w": 397,
+            "h": 414
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "fox",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 594,
+            "h": 434
+          },
+          "spriteSourceSize": {
+            "x": 125,
+            "y": 40,
+            "w": 368,
+            "h": 384
+          },
+          "frame": {
+            "x": 1586,
+            "y": 1,
+            "w": 368,
+            "h": 384
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "pig",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 418,
+            "h": 338
+          },
+          "spriteSourceSize": {
+            "x": 8,
+            "y": 5,
+            "w": 405,
+            "h": 333
+          },
+          "frame": {
+            "x": 1,
+            "y": 447,
+            "w": 405,
+            "h": 333
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "sheep",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 386,
+            "h": 338
+          },
+          "spriteSourceSize": {
+            "x": 11,
+            "y": 2,
+            "w": 368,
+            "h": 328
+          },
+          "frame": {
+            "x": 1586,
+            "y": 387,
+            "w": 368,
+            "h": 328
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "wolfhound",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 418,
+            "h": 338
+          },
+          "spriteSourceSize": {
+            "x": 13,
+            "y": 7,
+            "w": 404,
+            "h": 327
+          },
+          "frame": {
+            "x": 408,
+            "y": 447,
+            "w": 404,
+            "h": 327
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "foxhound",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 418,
+            "h": 306
+          },
+          "spriteSourceSize": {
+            "x": 10,
+            "y": 15,
+            "w": 398,
+            "h": 277
+          },
+          "frame": {
+            "x": 814,
+            "y": 431,
+            "w": 398,
+            "h": 277
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "filename": "rabbit",
+          "rotated": false,
+          "trimmed": true,
+          "sourceSize": {
+            "w": 290,
+            "h": 402
+          },
+          "spriteSourceSize": {
+            "x": 2,
+            "y": 14,
+            "w": 287,
+            "h": 373
+          },
+          "frame": {
+            "x": 1214,
+            "y": 417,
+            "w": 287,
+            "h": 373
+          },
+          "anchor": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "3.0",
+    "smartupdate": "$TexturePacker:SmartUpdate:0c749fcd05f51e8e05b73bf816c156d7:ca95750b1ae60861f771b67bb21fb21d:dec36fa6587d8dcf00432a4e644a9ea2$"
+  }
+}

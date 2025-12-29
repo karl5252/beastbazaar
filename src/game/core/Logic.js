@@ -2,10 +2,14 @@ import {PlayerState} from "./PlayerState.js";
 import {BANK_MAX} from "../constants/BankConfig.js";
 import {EXCHANGE_RATES} from "../constants/ExchangeRates.js";
 import {WIN_REQUIREMENTS} from "../constants/Constants.js";
+import {ExchangeManager} from "./ExchangeManager.js";
 
 export class Logic {
-    constructor(players=[]) {
+    constructor(players = [], config = {}) {
         this.players = players;
+        this.config = config;
+        this.exchangeManager = new ExchangeManager();
+
         this.currentPlayerIndex = 0;
         this.turnNumber = 0;
 
@@ -39,12 +43,67 @@ export class Logic {
         this.turnState.hasExchanged = false;
     }
 
+    postTradeRequest({targetIndex, offer, want}) {
+        const p = this.getCurrentPlayer();
+        return this.exchangeManager.postRequest({
+            requestorIndex: p.index,
+            targetIndex,
+            offer,
+            want,
+            createdTurn: this.turnNumber,
+            requestorHerd: p.getHerd(),
+        });
+    }
+
+    acceptTrade({requestId}) {
+        const acceptor = this.getCurrentPlayer();
+
+        const req = this.exchangeManager.exchangeRequests.find(r => r.id === requestId);
+        if (!req) return {ok: false, reason: "request_not_found"};
+
+        const requestor = this.players[req.requestorIndex];
+
+        const acc = this.exchangeManager.acceptRequest({
+            requestId,
+            acceptorIndex: acceptor.index,
+            currentTurn: this.turnNumber,
+            expiryTurns: this.config.tradeExpiry,
+            requestorHerd: requestor.getHerd(),
+            acceptorHerd: acceptor.getHerd(),
+        });
+
+        if (!acc.ok) return {ok: false, reason: acc.reason ?? acc.reason};
+
+        const exec = this.exchangeManager.executeExchange(acc.request, requestor, acceptor);
+        if (!exec.ok) return {ok: false, reason: exec.reason ?? exec.reason};
+
+        return {ok: true, reason: "trade_executed"};
+    }
+
+
     endTurn() {
         const current = this.getCurrentPlayer();
 
         if (checkVictoryCondition(current)) {
             return {ok: true, winnerIndex: current.index};
         }
+
+        // Get count before pruning
+        const tradesBefore = this.exchangeManager.exchangeRequests.length;
+
+        // Prune invalid/expired trade requests
+        this.exchangeManager.pruneInvalidRequests({
+            currentTurn: this.turnNumber,
+            expiryTurns: this.config.tradeExpiry ?? 5,
+            herdProvider: (playerIndex) => {
+                if (playerIndex === 99) return this.bankHerd.getHerd();
+                return this.players[playerIndex]?.getHerd() || null;
+            }
+        });
+
+        // Get count after pruning
+        const tradesAfter = this.exchangeManager.exchangeRequests.length;
+        const tradesPruned = tradesBefore - tradesAfter;
 
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         this.turnNumber += 1;
@@ -54,7 +113,8 @@ export class Logic {
             ok: true,
             winnerIndex: null,
             currentPlayerIndex: this.currentPlayerIndex,
-            turnNumber: this.turnNumber
+            turnNumber: this.turnNumber,
+            tradesPruned // ← Include pruned count
         };
     }
 

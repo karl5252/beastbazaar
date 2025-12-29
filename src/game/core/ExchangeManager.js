@@ -157,20 +157,27 @@ export class ExchangeManager {
      * Called after validation passes
      */
     executeExchange(request, requestorPlayer, acceptorPlayer) {
-        const success1 = requestorPlayer.transfer_animal(
-            acceptorPlayer,
-            request.offer.animal,
-            request.offer.amount
-        );
+        const a = requestorPlayer.getHerd();
+        const b = acceptorPlayer.getHerd();
 
-        const success2 = acceptorPlayer.transfer_animal(
-            requestorPlayer,
-            request.want.animal,
-            request.want.amount
-        );
+        const offerAnimal = request.offer.animal;
+        const offerAmt = request.offer.amount;
 
-        return success1 && success2
-            ? {ok: true}
-            : {ok: false, reason: "transfer_failed"};
+        const wantAnimal = request.want.animal;
+        const wantAmt = request.want.amount;
+
+        // precheck: albo wszystko, albo nic
+        if ((a[offerAnimal] ?? 0) < offerAmt) return {ok: false, reason: "transfer_failed"};
+        if ((b[wantAnimal] ?? 0) < wantAmt) return {ok: false, reason: "transfer_failed"};
+
+        // commit
+        a[offerAnimal] = (a[offerAnimal] ?? 0) - offerAmt;
+        b[offerAnimal] = (b[offerAnimal] ?? 0) + offerAmt;
+
+        b[wantAnimal] = (b[wantAnimal] ?? 0) - wantAmt;
+        a[wantAnimal] = (a[wantAnimal] ?? 0) + wantAmt;
+
+        return {ok: true};
     }
+
 }
