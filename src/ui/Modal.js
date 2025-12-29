@@ -7,8 +7,8 @@ export class Modal extends Phaser.GameObjects.Container {
         super(scene, 0, 0);
 
         const {
-            width = 800,
-            height = 600,
+            width = 840,
+            height = 640,
             title = 'Modal',
             showCloseButton = true,
             onClose = null
@@ -27,7 +27,7 @@ export class Modal extends Phaser.GameObjects.Container {
         this.createPanel(scene, width, height);
         this.createHeader(scene, title, showCloseButton);
 
-        // Container for modal content (will be populated by child classes)
+        // Container for modal content
         this.contentContainer = scene.add.container(0, 40);
         this.add(this.contentContainer);
 
@@ -44,7 +44,6 @@ export class Modal extends Phaser.GameObjects.Container {
     }
 
     createOverlay(scene, screenWidth, screenHeight) {
-        // Semi-transparent dark overlay that covers entire screen
         this.overlay = scene.add.rectangle(
             0, 0,
             screenWidth * 2, screenHeight * 2,
@@ -53,18 +52,19 @@ export class Modal extends Phaser.GameObjects.Container {
         );
         this.overlay.setOrigin(0.5);
         this.overlay.setInteractive();
+
+        // Click overlay to close (optional)
+        // this.overlay.on('pointerdown', () => this.close());
+
         this.add(this.overlay);
     }
 
     createPanel(scene, width, height) {
-        // Rounded rectangle using graphics
         const graphics = scene.add.graphics();
 
-        // Fill
         graphics.fillStyle(0xffffff, 1);
         graphics.fillRoundedRect(-width / 2, -height / 2, width, height, 20);
 
-        // Border
         graphics.lineStyle(4, 0x8b4513, 1);
         graphics.strokeRoundedRect(-width / 2, -height / 2, width, height, 20);
 
@@ -74,7 +74,6 @@ export class Modal extends Phaser.GameObjects.Container {
     createHeader(scene, title, showCloseButton) {
         const headerY = -this.modalHeight / 2 + 40;
 
-        // Title text
         this.titleText = scene.add.text(0, headerY, title, {
             fontSize: '32px',
             fontFamily: 'Arial Black',
@@ -84,7 +83,6 @@ export class Modal extends Phaser.GameObjects.Container {
         }).setOrigin(0.5);
         this.add(this.titleText);
 
-        // Close button (X)
         if (showCloseButton) {
             const closeBtn = scene.add.text(
                 this.modalWidth / 2 - 40,
@@ -113,15 +111,20 @@ export class Modal extends Phaser.GameObjects.Container {
             duration: 150,
             ease: 'Power2',
             onComplete: () => {
+                // Unregister from scene
+                if (this.scene.activeModal === this) {
+                    this.scene.activeModal = null;
+                }
+
                 if (this.onCloseCallback) {
                     this.onCloseCallback();
                 }
+
                 this.destroy();
             }
         });
     }
 
-    // Helper method to add content to the modal
     addContent(gameObject) {
         this.contentContainer.add(gameObject);
     }

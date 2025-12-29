@@ -36,7 +36,10 @@
     "game_reject": "Reject",
     "hint_roll_first": "Roll the dice first!",
     "bank_trade_title": "TRADE WITH BANK",
-    "bank_trade_instructions": "Select animals to trade with the bank"
+    "bank_trade_instructions": "Trade animals with the bank at the following rates:",
+    "bank_give": "You give:",
+    "bank_receive": "You receive:",
+    "bank_confirm": "CONFIRM TRADE"
   },
   "pl": {
     "menu_start_game": "Rozpocznij grę"

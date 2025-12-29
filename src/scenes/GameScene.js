@@ -46,6 +46,9 @@ export class GameScene extends Scene {
         // Get initial state synchronously
         this.currentState = this.controller.getPublicState();
 
+        // track modal
+        this.activeModal = null;
+
         // Create UI elements with initial state
         this.createUI();
     }
@@ -393,12 +396,30 @@ export class GameScene extends Scene {
 
     onOpenBank() {
         console.log('Bank clicked');
-        const modal = new BankTradeModal(this, this.controller);
-        this.add.existing(modal);
+
+        // Close existing modal if any
+        if (this.activeModal) {
+            this.activeModal.close();
+            this.activeModal = null;
+        }
+
+        // Create and show bank trade modal
+        this.activeModal = new BankTradeModal(this, this.controller);
+        this.add.existing(this.activeModal);
     }
 
     onOpenTrade() {
         console.log('Trade clicked');
+
+        // Close existing modal if any
+        if (this.activeModal) {
+            this.activeModal.close();
+            this.activeModal = null;
+        }
+
+        // TODO: Create player trade modal
+        // this.activeModal = new PlayerTradeModal(this, this.controller);
+        // this.add.existing(this.activeModal);
     }
 
     onEndTurn() {
@@ -408,6 +429,16 @@ export class GameScene extends Scene {
 
     openGameMenu() {
         console.log('Menu clicked');
+
+        // Close existing modal if any
+        if (this.activeModal) {
+            this.activeModal.close();
+            this.activeModal = null;
+        }
+
+        // TODO: Create game menu modal
+        // this.activeModal = new GameMenuModal(this);
+        // this.add.existing(this.activeModal);
     }
 
     shutdown() {
