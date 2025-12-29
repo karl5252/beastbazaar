@@ -451,7 +451,7 @@ export class GameScene extends Scene {
             // Accept button (checkmark)
             const acceptBtn = new UiButton(this, cardWidth - 70, cardHeight / 2, {
                 color: 'green',
-                size: 's',
+                size: 'xs',
                 text: '✓',
                 textStyle: {fontSize: '20px'},
                 onClick: () => this.onAcceptTrade(trade.id)
@@ -462,7 +462,7 @@ export class GameScene extends Scene {
             // Reject button (X)
             const rejectBtn = new UiButton(this, cardWidth - 25, cardHeight / 2, {
                 color: 'orange',
-                size: 's',
+                size: 'xs',
                 text: '✗',
                 textStyle: {fontSize: '20px'},
                 onClick: () => this.onRejectTrade(trade.id)
@@ -567,19 +567,26 @@ export class GameScene extends Scene {
     onRollDice() {
         console.log('Roll dice clicked');
 
-        // Show dice animation
-        const diceModal = new DiceRollModal(this, () => {
-            // After animation completes, process the roll
-            this.processDiceRoll();
-        });
-        this.add.existing(diceModal);
-
-        // Roll the dice (get results)
+        // 1. FIRST: Get the actual dice roll result
         const result = this.controller.rollDice();
 
-        if (result.ok && result.diceResults) {
-            // Set final results in the animation
-            diceModal.setFinalResults(result.diceResults.green, result.diceResults.red);
+        if (!result.ok) {
+            console.error('[GameScene] Roll failed:', result.reason);
+            return;
+        }
+
+        // 2. THEN: Show animation with the real results
+        if (result.diceResults) {
+            const diceModal = new DiceRollModal(
+                this,
+                result.diceResults.green,
+                result.diceResults.red,
+                () => {
+                    // Animation complete callback
+                    console.log('[GameScene] Dice animation complete');
+                }
+            );
+            this.add.existing(diceModal);
         }
     }
 

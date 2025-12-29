@@ -3,9 +3,11 @@
 import {DEPTH} from "../game/constants/Depth.js";
 
 export class DiceRollModal extends Phaser.GameObjects.Container {
-    constructor(scene, onComplete) {
+    constructor(scene, greenResult, redResult, onComplete) {
         super(scene, 0, 0);
 
+        this.greenResult = greenResult;  // ← Store real results
+        this.redResult = redResult;
         this.onCompleteCallback = onComplete;
 
         const {width, height} = scene.cameras.main;
@@ -40,13 +42,13 @@ export class DiceRollModal extends Phaser.GameObjects.Container {
     }
 
     createDiceAnimation(scene) {
-        // Green dice
+        // Green dice - start with random frame
         this.greenDice = scene.add.sprite(-150, 0, 'dices', 'green_rabbit')
             .setScale(0.5)
             .setOrigin(0.5);
         this.add(this.greenDice);
 
-        // Red dice
+        // Red dice - start with random frame
         this.redDice = scene.add.sprite(150, 0, 'dices', 'red_rabbit')
             .setScale(0.5)
             .setOrigin(0.5);
@@ -64,21 +66,21 @@ export class DiceRollModal extends Phaser.GameObjects.Container {
     startDiceRoll() {
         // Spin animation for both dice
         const spinDuration = 100;
-        const totalSpins = 10;
+        const totalSpins = 12;  // Show some spinning for effect
         let spinCount = 0;
 
         // Possible dice faces
         const greenFaces = ['green_rabbit', 'green_sheep', 'green_pig', 'green_horse', 'green_fox'];
         const redFaces = ['red_rabbit', 'red_sheep', 'red_pig', 'red_cow', 'red_wolf'];
 
-        // Spin timer
+        // Spin timer - show random faces for visual effect
         const spinTimer = this.scene.time.addEvent({
             delay: spinDuration,
             repeat: totalSpins - 1,
             callback: () => {
                 spinCount++;
 
-                // Random faces
+                // Random faces during spin (just visual)
                 const randomGreen = Phaser.Utils.Array.GetRandom(greenFaces);
                 const randomRed = Phaser.Utils.Array.GetRandom(redFaces);
 
@@ -94,7 +96,7 @@ export class DiceRollModal extends Phaser.GameObjects.Container {
                     yoyo: true
                 });
 
-                // Last spin - show final results
+                // Last spin - show REAL results
                 if (spinCount === totalSpins) {
                     this.showFinalResults();
                 }
@@ -103,32 +105,37 @@ export class DiceRollModal extends Phaser.GameObjects.Container {
     }
 
     showFinalResults() {
-        // Wait a moment, then close
-        this.scene.time.delayedCall(800, () => {
-            this.close();
-        });
-    }
-
-    setFinalResults(greenResult, redResult) {
-        // Set the actual results
-        const greenFrame = `green_${greenResult.toLowerCase()}`;
-        const redFrame = `red_${redResult.toLowerCase()}`;
+        // Set the ACTUAL results from DiceRoller
+        const greenFrame = `green_${this.greenResult.toLowerCase()}`;
+        const redFrame = `red_${this.redResult.toLowerCase()}`;
 
         this.greenDice.setFrame(greenFrame);
         this.redDice.setFrame(redFrame);
 
-        // Pop animation
+        // Big pop animation
         this.scene.tweens.add({
             targets: [this.greenDice, this.redDice],
-            scaleX: 0.6,
-            scaleY: 0.6,
-            duration: 150,
+            scaleX: 0.7,
+            scaleY: 0.7,
+            duration: 200,
             ease: 'Back.easeOut',
-            yoyo: true
+            onComplete: () => {
+                this.scene.tweens.add({
+                    targets: [this.greenDice, this.redDice],
+                    scaleX: 0.5,
+                    scaleY: 0.5,
+                    duration: 100
+                });
+            }
         });
 
         // Update text
         this.rollingText.setText('🎲');
+
+        // Close after showing results
+        this.scene.time.delayedCall(1500, () => {
+            this.close();
+        });
     }
 
     close() {
