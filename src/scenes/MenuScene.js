@@ -10,8 +10,6 @@ export class MenuScene extends Scene {
     }
 
     create() {
-        console.log("nineslice.length =", this.add.nineslice.length);
-        console.log("nineslice fn =", this.add.nineslice.toString());
 
         const {width, height} = this.cameras.main;
 

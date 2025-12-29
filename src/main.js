@@ -5,12 +5,6 @@ import {Preloader} from "./scenes/Preloader.js";
 import {Boot} from "./scenes/Boot.js";
 import {MenuScene} from "./scenes/MenuScene.js";
 
-import * as NineSlicePkg from 'phaser3-nineslice';
-
-console.log('[NineSlice] module keys:', Object.keys(NineSlicePkg));
-// IMPORTANT: Use Plugin export
-const NineSlicePlugin = NineSlicePkg.Plugin;
-
 const config = {
     type: Phaser.AUTO,
     parent: 'app',
@@ -26,15 +20,6 @@ const config = {
         arcade: {debug: false, gravity: {y: 0}},
     },
     scene: [Boot, Preloader, MenuScene, GameScene],
-    plugins: {
-        global: [
-            {
-                key: 'NineSlicePlugin',
-                plugin: NineSlicePlugin,
-                start: true
-            }
-        ]
-    }
 };
 
 export default new Phaser.Game(config);
