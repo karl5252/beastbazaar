@@ -7,6 +7,8 @@ import {DEPTH} from "../game/constants/Depth.js";
 import {BankTradeModal} from "../ui/BankTradeModal.js";
 import {PlayerTradeModal} from "../ui/PlayerTradeModal.js";
 import {Toast} from "../ui/Toast.js";
+import {GameMenuModal} from "../ui/GameMenuModal.js";
+import {DiceRollModal} from "../ui/DiceRollModal.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -67,6 +69,8 @@ export class GameScene extends Scene {
         this.createBankStatusBar();
     }
 
+    // game/scenes/GameScene.js
+
     createHUD() {
         const {width} = this.cameras.main;
         const hudHeight = 80;
@@ -91,14 +95,15 @@ export class GameScene extends Scene {
                 strokeThickness: 4
             }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        const menuBtn = this.add.text(width - 20, hudHeight / 2, '⚙️', {
-            fontSize: '36px'
-        }).setOrigin(1, 0.5)
+        // Replace emoji with icon sprite
+        const menuBtn = this.add.sprite(width - 40, hudHeight / 2, 'icon_settings')
+            .setScale(0.08)
+            .setOrigin(0.5)
             .setInteractive({useHandCursor: true})
             .setDepth(DEPTH.HUD_ELEMENTS);
 
-        menuBtn.on('pointerover', () => menuBtn.setScale(1.1));
-        menuBtn.on('pointerout', () => menuBtn.setScale(1));
+        menuBtn.on('pointerover', () => menuBtn.setScale(0.09));
+        menuBtn.on('pointerout', () => menuBtn.setScale(0.08));
         menuBtn.on('pointerdown', () => this.openGameMenu());
 
         this.hudElements = {turnText, playerText, menuBtn};
@@ -401,18 +406,38 @@ export class GameScene extends Scene {
             }).setOrigin(0);
         container.add(requestorText);
 
-        // Offer: "6x Rabbit → 1x Sheep"
+        // Offer with icon instead of arrow emoji
         const offerText = this.add.text(10, 30,
-            `${trade.offer.amount}× ${trade.offer.animal} → ${trade.want.amount}× ${trade.want.animal}`, {
+            `${trade.offer.amount}× ${trade.offer.animal}`, {
                 fontSize: '13px',
                 fontFamily: 'Arial',
                 color: '#000000'
             }).setOrigin(0);
         container.add(offerText);
 
-        // Target info
-        const targetText = this.add.text(10, 48,
-            `→ ${targetName}`, {
+        // Small arrow icon
+        const arrowIcon = this.add.sprite(95, 30, 'icon_right_arrow')
+            .setScale(0.04)
+            .setOrigin(0, 0.5);
+        container.add(arrowIcon);
+
+        // Want
+        const wantText = this.add.text(110, 30,
+            `${trade.want.amount}× ${trade.want.animal}`, {
+                fontSize: '13px',
+                fontFamily: 'Arial',
+                color: '#000000'
+            }).setOrigin(0);
+        container.add(wantText);
+
+        // Target info with icon
+        const targetArrow = this.add.sprite(10, 48, 'icon_right_arrow')
+            .setScale(0.03)
+            .setOrigin(0, 0.5);
+        container.add(targetArrow);
+
+        const targetText = this.add.text(20, 48,
+            targetName, {
                 fontSize: '12px',
                 fontFamily: 'Arial',
                 color: '#888888'
@@ -423,7 +448,7 @@ export class GameScene extends Scene {
         const currentPlayerIndex = this.currentState.currentPlayerIndex;
 
         if (trade.targetIndex === currentPlayerIndex) {
-            // Accept button
+            // Accept button (checkmark)
             const acceptBtn = new UiButton(this, cardWidth - 70, cardHeight / 2, {
                 color: 'green',
                 size: 's',
@@ -434,7 +459,7 @@ export class GameScene extends Scene {
             this.add.existing(acceptBtn);
             container.add(acceptBtn);
 
-            // Reject button
+            // Reject button (X)
             const rejectBtn = new UiButton(this, cardWidth - 25, cardHeight / 2, {
                 color: 'orange',
                 size: 's',
@@ -541,7 +566,26 @@ export class GameScene extends Scene {
 
     onRollDice() {
         console.log('Roll dice clicked');
-        this.controller.rollDice();
+
+        // Show dice animation
+        const diceModal = new DiceRollModal(this, () => {
+            // After animation completes, process the roll
+            this.processDiceRoll();
+        });
+        this.add.existing(diceModal);
+
+        // Roll the dice (get results)
+        const result = this.controller.rollDice();
+
+        if (result.ok && result.diceResults) {
+            // Set final results in the animation
+            diceModal.setFinalResults(result.diceResults.green, result.diceResults.red);
+        }
+    }
+
+    processDiceRoll() {
+        // Dice roll is already done, just let state update handle UI
+        console.log('[GameScene] Dice roll complete');
     }
 
     onOpenBank() {
@@ -586,9 +630,9 @@ export class GameScene extends Scene {
             this.activeModal = null;
         }
 
-        // TODO: Create game menu modal
-        // this.activeModal = new GameMenuModal(this);
-        // this.add.existing(this.activeModal);
+        // Create game menu modal
+        this.activeModal = new GameMenuModal(this);
+        this.add.existing(this.activeModal);
     }
 
     shutdown() {

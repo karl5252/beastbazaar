@@ -80,6 +80,18 @@ export class Preloader extends Scene {
         if (!this.textures.exists('icon_stats')) {
             this.load.image('icon_stats', 'assets/icons/icon_stats.png');
         }
+        if (!this.textures.exists('icon_settings')) {
+            this.load.image('icon_settings', 'assets/icons/icon_cog.png');
+        }
+        if (!this.textures.exists('icon_left_arrow')) {
+            this.load.image('icon_left_arrow', 'assets/icons/icon_left_arrow.png');
+        }
+        if (!this.textures.exists('icon_right_arrow')) {
+            this.load.image('icon_right_arrow', 'assets/icons/icon_right_arrow.png');
+        }
+        if (!this.textures.exists('icon_up_arrow')) {
+            this.load.image('icon_up_arrow', 'assets/icons/icon_up_arrow.png');
+        }
 
         // ===== Load Atlases =====
 

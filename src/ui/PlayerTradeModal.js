@@ -44,8 +44,17 @@ export class PlayerTradeModal extends Modal {
 
         this.createPlayerSelector();
         this.createOfferSection();
+        this.createExchangeArrow();  // ← This adds the arrow
         this.createWantSection();
         this.createActionButtons();
+    }
+
+    createExchangeArrow() {
+        // Replace emoji with icon sprite
+        const arrow = this.scene.add.sprite(0, 0, 'icon_right_arrow')
+            .setScale(0.15)
+            .setOrigin(0.5);
+        this.addContent(arrow);
     }
 
     createPlayerSelector() {

@@ -159,13 +159,14 @@ export class BankTradeModal extends Modal {
     }
 
     createExchangeArrow() {
-        const arrow = this.scene.add.text(0, 0, '➡️', {
-            fontSize: '48px'
-        }).setOrigin(0.5);
+        // Replace emoji with icon sprite
+        const arrow = this.scene.add.sprite(0, 0, 'icon_right_arrow')
+            .setScale(0.15)
+            .setOrigin(0.5);
         this.addContent(arrow);
 
         // Exchange rate display
-        this.rateText = this.scene.add.text(0, 50, '', {
+        this.rateText = this.scene.add.text(0, 60, '', {
             fontSize: '20px',
             fontFamily: 'Arial',
             color: '#555555',
