@@ -52,30 +52,17 @@ export class Preloader extends Scene {
         });
 
         // ===== Load Individual Button Images =====
+        const buttonColors = ['yellow', 'orange', 'teal', 'green', 'violet', 'pink'];
+        const buttonSizes = ['xs', 's', 'm', 'l'];
 
-        if (!this.textures.exists('btn_yellow')) {
-            this.load.image('btn_yellow', 'assets/ui/btn_yellow.png');
-        }
-
-        if (!this.textures.exists('btn_orange')) {
-            this.load.image('btn_orange', 'assets/ui/btn_orange.png');
-        }
-
-        if (!this.textures.exists('btn_teal')) {
-            this.load.image('btn_teal', 'assets/ui/btn_teal.png');
-        }
-
-        if (!this.textures.exists('btn_green')) {
-            this.load.image('btn_green', 'assets/ui/btn_green.png');
-        }
-
-        if (!this.textures.exists('btn_violet')) {
-            this.load.image('btn_violet', 'assets/ui/btn_violet.png');
-        }
-
-        if (!this.textures.exists('btn_pink')) {
-            this.load.image('btn_pink', 'assets/ui/btn_pink.png');
-        }
+        buttonColors.forEach(color => {
+            buttonSizes.forEach(size => {
+                const key = `btn_${color}_${size}`;
+                if (!this.textures.exists(key)) {
+                    this.load.image(key, `assets/ui/btn_${color}_${size}.png`);
+                }
+            });
+        });
 
         // ===== Load Atlases =====
 

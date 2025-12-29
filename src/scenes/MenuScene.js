@@ -10,6 +10,9 @@ export class MenuScene extends Scene {
     }
 
     create() {
+        console.log("nineslice.length =", this.add.nineslice.length);
+        console.log("nineslice fn =", this.add.nineslice.toString());
+
         const {width, height} = this.cameras.main;
 
         // Background
@@ -123,14 +126,11 @@ export class MenuScene extends Scene {
         }).setOrigin(0, 0.5);
 
         // Minus button
-        const minusBtn = new UiButton(this, centerX + 10, y, {
-            key: 'btn_orange',
-            w: 50,
-            h: 50,
-            slice: 16,
+        const minusBtn = new UiButton(this, centerX - 10, y, {
+            color: 'teal',
+            size: 'xs',
             text: '−',
             textStyle: {fontSize: '32px'},
-            autoSize: false,
             onClick: () => this.changePlayerCount(-1)
         });
         this.add.existing(minusBtn);
@@ -145,21 +145,18 @@ export class MenuScene extends Scene {
         }).setOrigin(0.5);
 
         // Plus button
-        const plusBtn = new UiButton(this, centerX + 110, y, {
-            key: 'btn_teal',
-            w: 50,
-            h: 50,
-            slice: 16,
+        const plusBtn = new UiButton(this, centerX + 130, y, {
+            color: 'yellow',
+            size: 'xs',
             text: '+',
             textStyle: {fontSize: '32px'},
-            autoSize: false,
             onClick: () => this.changePlayerCount(1)
         });
         this.add.existing(plusBtn);
 
         // ===== Row 2: Player Names (below) =====
 
-        const namesY = y + 70;  // 70px below player count row
+        const namesY = y + 80;  // 70px below player count row
 
         // "Names (optional)" label
         this.add.text(centerX - 250, namesY, t('menu_names_optional'), {
@@ -187,18 +184,11 @@ export class MenuScene extends Scene {
 
     createNameButton(x, y, index) {
         const nameBtn = new UiButton(this, x, y, {
-            key: 'btn_violet',
-            w: 100,
-            h: 40,
-            slice: 16,
+            color: 'violet',
+            size: 'xs',
             text: `P${index + 1}`,
             textStyle: {fontSize: '20px'},
-            autoSize: false,
-            onClick: () => {
-                if (index < this.gameSettings.playerCount) {
-                    this.openNameInput(index, nameBtn);
-                }
-            }
+            onClick: () => this.openNameInput(index, nameBtn)
         });
 
         this.add.existing(nameBtn);
@@ -255,7 +245,7 @@ export class MenuScene extends Scene {
     createDifficultySelector() {
         const {width} = this.cameras.main;
         const centerX = width / 2;
-        const y = 400;
+        const y = 420;
 
         this.add.text(centerX, y, t('menu_difficulty'), {
             fontSize: '32px',
@@ -265,29 +255,21 @@ export class MenuScene extends Scene {
             strokeThickness: 6
         }).setOrigin(0.5);
 
-        this.easyBtn = new UiButton(this, centerX - 120, y + 40, {
-            atlas: 'buttons',
-            key: 'btn_violet',
-            w: 160,
-            h: 60,
-            slice: 16,
+        this.easyBtn = new UiButton(this, centerX - 120, y + 45, {
+            color: 'violet',
+            size: 's',
             text: t('difficulty_easy'),
             textStyle: {fontSize: '24px'},
-            autoSize: false,
             onClick: () => this.setDifficulty('easy')
         });
         this.add.existing(this.easyBtn);
         this.easyBtn.setEnabled(true);
 
-        this.mediumBtn = new UiButton(this, centerX + 120, y + 40, {
-            atlas: 'buttons',
-            key: 'btn_yellow',
-            w: 160,
-            h: 60,
-            slice: 16,
+        this.mediumBtn = new UiButton(this, centerX + 120, y + 45, {
+            color: 'yellow',
+            size: 's',
             text: t('difficulty_medium'),
             textStyle: {fontSize: '24px'},
-            autoSize: false,
             onClick: () => this.setDifficulty('medium')
         });
         this.add.existing(this.mediumBtn);
@@ -297,7 +279,7 @@ export class MenuScene extends Scene {
     createExpirySlider() {
         const {width} = this.cameras.main;
         const centerX = width / 2;
-        const y = 540;
+        const y = 560;
 
         this.add.text(centerX, y - 40, t('menu_trade_expiry'), {
             fontSize: '32px',
@@ -359,17 +341,13 @@ export class MenuScene extends Scene {
     createStartButton() {
         const {width} = this.cameras.main;
 
-        const btn = new UiButton(this, width / 2, 720, {
-            key: 'btn_yellow',          // Just the image key, no atlas
-            w: 400,
-            h: 100,
-            slice: 16,
+        const btn = new UiButton(this, width / 2, 700, {
+            color: 'green',
+            size: 'l',
             text: t('menu_start_game'),
             textStyle: {fontSize: '42px'},
-            autoSize: false,
             onClick: () => this.startGame()
         });
-
         this.add.existing(btn);
 
         this.tweens.add({

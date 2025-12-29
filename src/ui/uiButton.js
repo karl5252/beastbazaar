@@ -4,21 +4,44 @@ export class UiButton extends Phaser.GameObjects.Container {
         super(scene, x, y);
 
         const {
-            key,
-            w = 220,
-            h = 64,
-            slice = 16,
+            color = 'yellow',     // Button color (yellow, orange, teal, etc.)
+            size = 'm',           // Preferred size: 's', 'm', 'l'
             text = '',
             textStyle = {},
-            paddingX = 48,
-            autoSize = true,
             onClick
         } = cfg;
 
-        // This works perfectly with individual image files
-        this.bg = scene.add.nineslice(0, 0, w, h, key, [slice, slice, slice, slice]);
+        // Build the sprite key based on color and size
+        const spriteKey = `btn_${color}_${size}`;
+
+        // Use simple sprite from loaded image
+        this.bg = scene.add.sprite(0, 0, spriteKey);
         this.bg.setOrigin(0.5);
 
+        // Calculate if we need to scale the button
+        // (Only if text is too wide for the button)
+        const tempText = scene.add.text(0, 0, text, {
+            fontFamily: 'Nunito',
+            fontSize: '24px',
+            fontWeight: '700',
+            ...textStyle
+        });
+
+        const textWidth = tempText.width;
+        tempText.destroy(); // Just measuring, don't need it
+
+        // Check if text fits with padding (80% of button width)
+        const availableWidth = this.bg.width * 0.8;
+        let scale = 1;
+
+        if (textWidth > availableWidth) {
+            // Calculate needed scale (max 1.2x)
+            const neededScale = Math.min(1.2, (textWidth + 40) / this.bg.width);
+            scale = neededScale;
+            this.bg.setScale(scale);
+        }
+
+        // Create the label
         this.label = scene.add.text(0, 0, text, {
             fontFamily: 'Nunito',
             fontSize: '24px',
@@ -32,21 +55,21 @@ export class UiButton extends Phaser.GameObjects.Container {
 
         this.add([this.bg, this.label]);
 
-        if (autoSize) {
-            const newW = Math.max(w, Math.ceil(this.label.width + paddingX));
-            this.bg.setSize(newW, h);
-            if (typeof this.bg.resize === 'function') this.bg.resize(newW, h);
-            this.setSize(newW, h);
-        } else {
-            this.setSize(w, h);
-        }
+        // Set container size based on scaled sprite
+        this.setSize(this.bg.displayWidth, this.bg.displayHeight);
 
         this.setInteractive(
-            new Phaser.Geom.Rectangle(-this.width / 2, -this.height / 2, this.width, this.height),
+            new Phaser.Geom.Rectangle(
+                -this.bg.displayWidth / 2,
+                -this.bg.displayHeight / 2,
+                this.bg.displayWidth,
+                this.bg.displayHeight
+            ),
             Phaser.Geom.Rectangle.Contains
         );
 
         this.enabled = true;
+        this.baseScale = scale; // Store base scale for animations
         this._bindInput(scene, onClick);
     }
 
@@ -57,20 +80,35 @@ export class UiButton extends Phaser.GameObjects.Container {
 
         this.on('pointerover', () => {
             if (!this.enabled) return;
-            scene.tweens.add({targets: this, scaleX: over.sx, scaleY: over.sy, duration: 90});
+            scene.tweens.add({
+                targets: this,
+                scaleX: this.baseScale * over.sx,
+                scaleY: this.baseScale * over.sy,
+                duration: 90
+            });
         });
 
         this.on('pointerout', () => {
             this.y -= this._pressedOff;
             this._pressedOff = 0;
-            scene.tweens.add({targets: this, scaleX: 1, scaleY: 1, duration: 90});
+            scene.tweens.add({
+                targets: this,
+                scaleX: this.baseScale,
+                scaleY: this.baseScale,
+                duration: 90
+            });
         });
 
         this.on('pointerdown', () => {
             if (!this.enabled) return;
             this.y += down.yOff;
             this._pressedOff = down.yOff;
-            scene.tweens.add({targets: this, scaleX: down.sx, scaleY: down.sy, duration: 60});
+            scene.tweens.add({
+                targets: this,
+                scaleX: this.baseScale * down.sx,
+                scaleY: this.baseScale * down.sy,
+                duration: 60
+            });
         });
 
         this.on('pointerup', () => {
@@ -79,8 +117,8 @@ export class UiButton extends Phaser.GameObjects.Container {
             this._pressedOff = 0;
             scene.tweens.add({
                 targets: this,
-                scaleX: over.sx,
-                scaleY: over.sy,
+                scaleX: this.baseScale * over.sx,
+                scaleY: this.baseScale * over.sy,
                 duration: 80,
                 onComplete: () => onClick && onClick()
             });
@@ -90,6 +128,12 @@ export class UiButton extends Phaser.GameObjects.Container {
     setEnabled(flag) {
         this.enabled = !!flag;
         this.alpha = this.enabled ? 1 : 0.55;
+        return this;
+    }
+
+    // Helper to update text (useful for dynamic content)
+    setText(newText) {
+        this.label.setText(newText);
         return this;
     }
 }

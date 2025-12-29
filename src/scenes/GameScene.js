@@ -177,14 +177,10 @@ export class GameScene extends Scene {
 
         // Roll Dice button
         this.rollBtn = new UiButton(this, centerX - spacing * 1.5, y, {
-            atlas: 'buttons',
-            key: 'btn_orange',
-            w: 200,
-            h: 120,
-            slice: 16,
+            color: 'orange',
+            size: 'm',
             text: `${t('game_roll')}\n🎲`,
             textStyle: {fontSize: '24px'},
-            autoSize: false,
             onClick: () => this.onRollDice()
         });
         this.add.existing(this.rollBtn);
