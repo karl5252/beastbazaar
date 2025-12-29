@@ -34,6 +34,39 @@ export class MenuScene extends Scene {
         this.createExpirySlider();
         this.createStartButton();
         this.createHowToPlayButton();
+        this.createCopyright();
+        this.createVersionText();
+
+    }
+
+    createCopyright() {
+        const centerX = 400;
+        const copyrightY = 750;
+
+        const copyright = this.add.text(centerX, copyrightY, '© 2025    WEE GAMES    FOR THE KIDS', {
+            fontSize: '16px',
+            fontFamily: 'Nunito',
+            color: '#9ca3af', // Gray
+            align: 'center'
+        });
+        copyright.setOrigin(0.5);
+    }
+
+    createVersionText() {
+        // add version text at bottom right
+        // read buildInfo.json via import.meta.env.VITE_APP_VERSION
+        const centerX = 780;
+        const versionY = 750;
+
+        const version = import.meta.env.VITE_APP_VERSION || 'dev';
+
+        const versionText = this.add.text(centerX, versionY, `v${version}`, {
+            fontSize: '14px',
+            fontFamily: 'Nunito',
+            color: '#22d3ee',
+            align: 'right'
+        });
+        versionText.setOrigin(1, 0.5);
 
     }
 
