@@ -64,6 +64,23 @@ export class Preloader extends Scene {
             });
         });
 
+        // ===== Load Icon Sprites =====
+        if (!this.textures.exists('icon_dice')) {
+            this.load.image('icon_dice', 'assets/icons/icon_dice.png');
+        }
+        if (!this.textures.exists('icon_trade')) {
+            this.load.image('icon_trade', 'assets/icons/icon_trade.png');
+        }
+        if (!this.textures.exists('icon_bank')) {
+            this.load.image('icon_bank', 'assets/icons/icon_bank.png');
+        }
+        if (!this.textures.exists('icon_turn')) {
+            this.load.image('icon_turn', 'assets/icons/icon_turn.png');
+        }
+        if (!this.textures.exists('icon_stats')) {
+            this.load.image('icon_stats', 'assets/icons/icon_stats.png');
+        }
+
         // ===== Load Atlases =====
 
         if (!this.textures.exists('animals')) {

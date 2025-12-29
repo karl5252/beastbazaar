@@ -73,7 +73,7 @@ export class GameScene extends Scene {
 
         const playerName = this.currentState.currentPlayerName;
         const playerText = this.add.text(width / 2, hudHeight / 2,
-            `🎲 ${playerName}'s ${t('game_turn')}`, {
+            `${playerName}'s ${t('game_turn')}`, {
                 fontSize: '32px',
                 fontFamily: 'Arial Black',
                 color: '#ffdd00',
@@ -175,57 +175,74 @@ export class GameScene extends Scene {
         const y = 420;
         const spacing = 240;
 
-        // Roll Dice button
+        // Roll Dice button - ICON + small text
         this.rollBtn = new UiButton(this, centerX - spacing * 1.5, y, {
-            color: 'orange',
+            color: 'green',
             size: 'm',
-            text: `${t('game_roll')}\n🎲`,
-            textStyle: {fontSize: '24px'},
+            icon: 'icon_dice',
+            iconScale: 0.10,
+            text: t('game_roll'),    // Just "Roll" not "Roll\n🎲"
+            textStyle: {fontSize: '18px'},
             onClick: () => this.onRollDice()
         });
         this.add.existing(this.rollBtn);
 
-        // Trade button
+        // Trade button - ICON + small text
         this.tradeBtn = new UiButton(this, centerX - spacing * 0.5, y, {
-            atlas: 'buttons',
-            key: 'btn_violet',
-            w: 200,
-            h: 120,
-            slice: 16,
-            text: `${t('game_trade')}\n🔄`,
-            textStyle: {fontSize: '24px'},
-            autoSize: false,
+            color: 'violet',
+            size: 'm',
+            icon: 'icon_trade',
+            iconScale: 0.10,
+            text: t('game_trade'),
+            textStyle: {fontSize: '18px'},
             onClick: () => this.onOpenTrade()
         });
         this.add.existing(this.tradeBtn);
 
-        // Bank button
+        // Bank button - ICON + small text
         this.bankBtn = new UiButton(this, centerX + spacing * 0.5, y, {
-            atlas: 'buttons',
-            key: 'btn_teal',
-            w: 200,
-            h: 120,
-            slice: 16,
-            text: `${t('game_bank')}\n💰`,
-            textStyle: {fontSize: '24px'},
-            autoSize: false,
+            color: 'teal',
+            size: 'm',
+            icon: 'icon_bank',
+            iconScale: 0.10,
+            text: t('game_bank'),
+            textStyle: {fontSize: '18px'},
             onClick: () => this.onOpenBank()
         });
         this.add.existing(this.bankBtn);
 
-        // End Turn button
+        // End Turn button - ICON + small text
         this.endTurnBtn = new UiButton(this, centerX + spacing * 1.5, y, {
-            atlas: 'buttons',
-            key: 'btn_yellow',
-            w: 200,
-            h: 120,
-            slice: 16,
-            text: `${t('game_end_turn')}\n▶▶`,
-            textStyle: {fontSize: '24px'},
-            autoSize: false,
+            color: 'yellow',
+            size: 'm',
+            icon: 'icon_turn',
+            iconScale: 0.10,
+            text: t('game_end_turn'),
+            textStyle: {fontSize: '18px'},
             onClick: () => this.onEndTurn()
         });
         this.add.existing(this.endTurnBtn);
+
+        this.endTurnHint = this.add.text(
+            this.endTurnBtn.x,
+            this.endTurnBtn.y - 80,
+            t('hint_roll_first'),
+            {
+                fontSize: '18px',
+                fontFamily: 'Arial Black',
+                color: '#ff6600',
+                stroke: '#000000',
+                strokeThickness: 3
+            }
+        ).setOrigin(0.5).setVisible(false);
+        this.tweens.add({
+            targets: this.endTurnHint,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
 
         this.updateButtonStates();
     }
@@ -238,7 +255,7 @@ export class GameScene extends Scene {
         this.add.rectangle(width / 2, y, width, barHeight, 0xd2b48c, 0.9)
             .setStrokeStyle(3, 0x8b4513);
 
-        this.add.text(20, y, '📊 ' + t('game_bank') + ':', {
+        this.add.text(20, y, t('game_bank') + ':', {
             fontSize: '24px',
             fontFamily: 'Arial Black',
             color: '#8b4513'
@@ -287,7 +304,7 @@ export class GameScene extends Scene {
 
         const tradeCount = this.currentState.pendingTrades.length;
         this.add.text(30, panelY + 15,
-            `📜 ${t('game_pending_trades')} (${tradeCount})`, {
+            `${t('game_pending_trades')} (${tradeCount})`, {
                 fontSize: '24px',
                 fontFamily: 'Arial Black',
                 color: '#8b4513'
@@ -298,8 +315,18 @@ export class GameScene extends Scene {
     }
 
     updateButtonStates() {
+        // Roll button: disabled after rolling
         this.rollBtn.setEnabled(!this.currentState.hasRolled);
+
+        // Bank button: disabled after exchanging
         this.bankBtn.setEnabled(!this.currentState.hasExchanged);
+
+        // End Turn button: ONLY enabled after player has rolled
+        this.endTurnBtn.setEnabled(this.currentState.hasRolled);
+
+        if (this.endTurnHint) {
+            this.endTurnHint.setVisible(!this.currentState.hasRolled);
+        }
     }
 
     updateTradeFeed(trades) {
@@ -315,7 +342,7 @@ export class GameScene extends Scene {
         // Update HUD
         this.hudElements.turnText.setText(`${t('game_turn')} ${state.turnNumber}`);
         this.hudElements.playerText.setText(
-            `🎲 ${state.currentPlayerName}'s ${t('game_turn')}`
+            `${state.currentPlayerName}'s ${t('game_turn')}`
         );
 
         // Update player herd
@@ -338,9 +365,8 @@ export class GameScene extends Scene {
             }
         });
 
-        // Update buttons
-        this.rollBtn.setEnabled(!state.hasRolled);
-        this.bankBtn.setEnabled(!state.hasExchanged);
+        // Update button states (includes END TURN lock)
+        this.updateButtonStates();
 
         // Update trades
         this.updateTradeFeed(state.pendingTrades);

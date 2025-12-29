@@ -33,7 +33,8 @@
     "game_expires_in": "Expires in",
     "game_turns": "turns",
     "game_accept": "Accept",
-    "game_reject": "Reject"
+    "game_reject": "Reject",
+    "hint_roll_first": "Roll the dice first!"
   },
   "pl": {
     "menu_start_game": "Rozpocznij grę"

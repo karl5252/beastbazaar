@@ -4,72 +4,67 @@ export class UiButton extends Phaser.GameObjects.Container {
         super(scene, x, y);
 
         const {
-            color = 'yellow',     // Button color (yellow, orange, teal, etc.)
-            size = 'm',           // Preferred size: 's', 'm', 'l'
-            text = '',
+            color = 'yellow',     // Button color
+            size = 'm',           // Button size: 's', 'm', 'l'
+            text = '',            // Text label
+            icon = null,          // Icon sprite key (e.g., 'icon_dice')
+            iconScale = 1,        // Icon scaling
             textStyle = {},
             onClick
         } = cfg;
 
-        // Build the sprite key based on color and size
+        // Build the sprite key
         const spriteKey = `btn_${color}_${size}`;
 
-        // Use simple sprite from loaded image
+        // Background sprite
         this.bg = scene.add.sprite(0, 0, spriteKey);
         this.bg.setOrigin(0.5);
 
-        // Calculate if we need to scale the button
-        // (Only if text is too wide for the button)
-        const tempText = scene.add.text(0, 0, text, {
-            fontFamily: 'Nunito',
-            fontSize: '24px',
-            fontWeight: '700',
-            ...textStyle
-        });
+        this.children = [this.bg];
 
-        const textWidth = tempText.width;
-        tempText.destroy(); // Just measuring, don't need it
-
-        // Check if text fits with padding (80% of button width)
-        const availableWidth = this.bg.width * 0.8;
-        let scale = 1;
-
-        if (textWidth > availableWidth) {
-            // Calculate needed scale (max 1.2x)
-            const neededScale = Math.min(1.2, (textWidth + 40) / this.bg.width);
-            scale = neededScale;
-            this.bg.setScale(scale);
+        // Add icon if provided (dominant, centered-top)
+        if (icon) {
+            this.icon = scene.add.sprite(0, -15, icon);
+            this.icon.setOrigin(0.5);
+            this.icon.setScale(iconScale);
+            this.children.push(this.icon);
         }
 
-        // Create the label
-        this.label = scene.add.text(0, 0, text, {
-            fontFamily: 'Nunito',
-            fontSize: '24px',
-            fontWeight: '700',
-            color: '#ffffff',
-            align: 'center',
-            stroke: '#000000',
-            strokeThickness: 3,
-            ...textStyle
-        }).setOrigin(0.5);
+        // Add text label (smaller, below icon)
+        if (text) {
+            const yOffset = icon ? 20 : 0; // Move down if there's an icon
 
-        this.add([this.bg, this.label]);
+            this.label = scene.add.text(0, yOffset, text, {
+                fontFamily: 'Nunito',
+                fontSize: icon ? '18px' : '24px', // Smaller if there's icon
+                fontWeight: '700',
+                color: '#ffffff',
+                align: 'center',
+                stroke: '#000000',
+                strokeThickness: 3,
+                ...textStyle
+            }).setOrigin(0.5);
 
-        // Set container size based on scaled sprite
-        this.setSize(this.bg.displayWidth, this.bg.displayHeight);
+            this.children.push(this.label);
+        }
+
+        this.add(this.children);
+
+        // Set container size
+        this.setSize(this.bg.width, this.bg.height);
 
         this.setInteractive(
             new Phaser.Geom.Rectangle(
-                -this.bg.displayWidth / 2,
-                -this.bg.displayHeight / 2,
-                this.bg.displayWidth,
-                this.bg.displayHeight
+                -this.bg.width / 2,
+                -this.bg.height / 2,
+                this.bg.width,
+                this.bg.height
             ),
             Phaser.Geom.Rectangle.Contains
         );
 
         this.enabled = true;
-        this.baseScale = scale; // Store base scale for animations
+        this.baseScale = 1;
         this._bindInput(scene, onClick);
     }
 
@@ -131,9 +126,10 @@ export class UiButton extends Phaser.GameObjects.Container {
         return this;
     }
 
-    // Helper to update text (useful for dynamic content)
     setText(newText) {
-        this.label.setText(newText);
+        if (this.label) {
+            this.label.setText(newText);
+        }
         return this;
     }
 }
