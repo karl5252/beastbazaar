@@ -106,7 +106,7 @@ export class GameScene extends Scene {
             .setDepth(DEPTH.HUD);
 
         const playerName = this.currentState.currentPlayerName;
-        this.add.text(panelX, panelY - panelHeight / 2 + 25,
+        this.herdTitleText = this.add.text(panelX, panelY - panelHeight / 2 + 25,
             `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`, {
                 fontSize: '28px',
                 fontFamily: 'Arial Black',
@@ -343,6 +343,11 @@ export class GameScene extends Scene {
         this.hudElements.turnText.setText(`${t('game_turn')} ${state.turnNumber}`);
         this.hudElements.playerText.setText(
             `${state.currentPlayerName}'s ${t('game_turn')}`
+        );
+
+        const playerName = state.currentPlayerName;
+        this.herdTitleText.setText(
+            `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`
         );
 
         // Update player herd

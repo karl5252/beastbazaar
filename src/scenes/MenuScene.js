@@ -97,7 +97,7 @@ export class MenuScene extends Scene {
         // Use atlas sprite for title
         const title = this.add.image(width / 2, 150, 'title')
             .setOrigin(0.5)
-            .setScale(0.3); // Adjust to fit screen
+            .setScale(0.2); // Adjust to fit screen
 
 
         // Optional: Add animal decorations using animals atlas
