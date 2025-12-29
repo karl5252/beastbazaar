@@ -9,6 +9,7 @@ import {PlayerTradeModal} from "../ui/PlayerTradeModal.js";
 import {Toast} from "../ui/Toast.js";
 import {GameMenuModal} from "../ui/GameMenuModal.js";
 import {DiceRollModal} from "../ui/DiceRollModal.js";
+import {HowToPlayModal} from "../ui/HowToPlayModal.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -95,7 +96,18 @@ export class GameScene extends Scene {
                 strokeThickness: 4
             }).setOrigin(0.5).setDepth(DEPTH.HUD_ELEMENTS);
 
-        // Replace emoji with icon sprite
+        // Info button (How to Play)
+        const infoBtn = this.add.sprite(width - 80, hudHeight / 2, 'icon_info')
+            .setScale(0.08)
+            .setOrigin(0.5)
+            .setInteractive({useHandCursor: true})
+            .setDepth(DEPTH.HUD_ELEMENTS);
+
+        infoBtn.on('pointerover', () => infoBtn.setScale(0.09));
+        infoBtn.on('pointerout', () => infoBtn.setScale(0.08));
+        infoBtn.on('pointerdown', () => this.openHowToPlay());
+
+        // Settings button
         const menuBtn = this.add.sprite(width - 40, hudHeight / 2, 'icon_settings')
             .setScale(0.08)
             .setOrigin(0.5)
@@ -106,7 +118,19 @@ export class GameScene extends Scene {
         menuBtn.on('pointerout', () => menuBtn.setScale(0.08));
         menuBtn.on('pointerdown', () => this.openGameMenu());
 
-        this.hudElements = {turnText, playerText, menuBtn};
+        this.hudElements = {turnText, playerText, infoBtn, menuBtn};
+    }
+
+    openHowToPlay() {
+        console.log('Info clicked');
+
+        if (this.activeModal) {
+            this.activeModal.close();
+            this.activeModal = null;
+        }
+
+        this.activeModal = new HowToPlayModal(this);
+        this.add.existing(this.activeModal);
     }
 
     createPlayerHerdDisplay() {
@@ -498,40 +522,59 @@ export class GameScene extends Scene {
     onStateUpdate(state) {
         console.log('[GameScene] Received state update:', state);
 
+        // Safety check - if scene is shutting down, ignore updates
+        if (!this.scene || !this.scene.isActive('GameScene')) {
+            console.log('[GameScene] Scene not active, ignoring state update');
+            return;
+        }
+
         this.currentState = state;
 
-        // Update HUD
+        // Update HUD - check if elements exist
+        if (!this.hudElements || !this.hudElements.turnText) {
+            console.warn('[GameScene] HUD elements not initialized');
+            return;
+        }
+
         this.hudElements.turnText.setText(`${t('game_turn')} ${state.turnNumber}`);
         this.hudElements.playerText.setText(
             `${state.currentPlayerName}'s ${t('game_turn')}`
         );
 
         const playerName = state.currentPlayerName;
-        this.herdTitleText.setText(
-            `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`
-        );
+        if (this.herdTitleText && this.herdTitleText.active) {
+            this.herdTitleText.setText(
+                `${playerName}'${playerName.endsWith('s') ? '' : 's'} ${t('game_herd')}`
+            );
+        }
 
-        // Update player herd
-        Object.keys(state.currentPlayerHerd).forEach(animal => {
-            const count = state.currentPlayerHerd[animal];
-            if (this.herdTexts[animal]) {
-                this.herdTexts[animal].setText(`×${count}`);
-                this.herdTexts[animal].setColor(count > 0 ? '#000000' : '#888888');
-            }
-            if (this.herdSprites[animal]) {
-                this.herdSprites[animal].setAlpha(count > 0 ? 1 : 0.3);
-            }
-        });
+        // Update player herd - check if objects exist and are active
+        if (this.herdTexts && this.herdSprites) {
+            Object.keys(state.currentPlayerHerd).forEach(animal => {
+                const count = state.currentPlayerHerd[animal];
 
-        // Update bank
-        Object.keys(state.bankHerd).forEach(animal => {
-            const count = state.bankHerd[animal];
-            if (this.bankTexts[animal]) {
-                this.bankTexts[animal].setText(`×${count}`);
-            }
-        });
+                if (this.herdTexts[animal] && this.herdTexts[animal].active) {
+                    this.herdTexts[animal].setText(`×${count}`);
+                    this.herdTexts[animal].setColor(count > 0 ? '#000000' : '#888888');
+                }
 
-        // Update button states (includes END TURN lock)
+                if (this.herdSprites[animal] && this.herdSprites[animal].active) {
+                    this.herdSprites[animal].setAlpha(count > 0 ? 1 : 0.3);
+                }
+            });
+        }
+
+        // Update bank - check if objects exist and are active
+        if (this.bankTexts) {
+            Object.keys(state.bankHerd).forEach(animal => {
+                const count = state.bankHerd[animal];
+                if (this.bankTexts[animal] && this.bankTexts[animal].active) {
+                    this.bankTexts[animal].setText(`×${count}`);
+                }
+            });
+        }
+
+        // Update button states
         this.updateButtonStates();
 
         // Update trades
@@ -643,9 +686,27 @@ export class GameScene extends Scene {
     }
 
     shutdown() {
+        console.log('[GameScene] Shutting down...');
+
+        // Remove event listeners
         this.events.off('game:state', this.onStateUpdate, this);
         this.events.off('ui:error', this.onError, this);
         this.events.off('game:victory', this.onVictory, this);
-        this.events.off('ui:toast', this.onToast, this); // ← Clean up
+        this.events.off('ui:toast', this.onToast, this);
+
+        // Destroy modal if open
+        if (this.activeModal) {
+            this.activeModal.destroy();
+            this.activeModal = null;
+        }
+
+        // Clear references to prevent memory leaks
+        this.controller = null;
+        this.currentState = null;
+        this.herdSprites = null;
+        this.herdTexts = null;
+        this.bankSprites = null;
+        this.bankTexts = null;
+        this.tradeItemContainer = null;
     }
 }

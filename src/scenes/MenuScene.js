@@ -3,6 +3,7 @@ import {Scene} from 'phaser';
 import {getLang, setLang, t} from "../utils/i18n.js";
 import {UiButton} from "../ui/UiButton.js";
 import {DEPTH} from "../game/constants/Depth.js";
+import {HowToPlayModal} from "../ui/HowToPlayModal.js";
 
 export class MenuScene extends Scene {
     constructor() {
@@ -32,6 +33,29 @@ export class MenuScene extends Scene {
         this.createDifficultySelector();
         this.createExpirySlider();
         this.createStartButton();
+        this.createHowToPlayButton();
+
+    }
+
+    createHowToPlayButton() {
+        const {width, height} = this.cameras.main;
+
+        // Info button in corner
+        const howToPlayBtn = new UiButton(this, width - 100, height - 50, {
+            color: 'teal',
+            size: 'm',
+            icon: 'icon_info',
+            iconScale: 0.10,
+            text: t('how_to_play_title') || 'How to Play',
+            textStyle: {fontSize: '16px'},
+            onClick: () => this.openHowToPlay()
+        });
+        this.add.existing(howToPlayBtn);
+    }
+
+    openHowToPlay() {
+        const modal = new HowToPlayModal(this);
+        this.add.existing(modal);
     }
 
     createLanguageSelector() {
@@ -77,14 +101,8 @@ export class MenuScene extends Scene {
             flagButton.on('pointerdown', () => {
                 setLang(lang.code);
 
-                // Check if assets already loaded
-                if (this.registry.get('assetsLoaded')) {
-                    // Just restart MenuScene, don't reload Preloader
-                    this.scene.restart();
-                } else {
-                    // First time, go through Preloader
-                    this.scene.start('Preloader');
-                }
+                // Assets already loaded, just restart MenuScene
+                this.scene.restart();
             });
         });
 
@@ -137,7 +155,7 @@ export class MenuScene extends Scene {
         this.playerCountText = this.add.text(centerX + 60, y, '2', {
             fontSize: '48px',
             color: '#ffffff',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             stroke: '#000000',
             strokeThickness: 6
         }).setOrigin(0.5);
@@ -159,7 +177,7 @@ export class MenuScene extends Scene {
         // "Names (optional)" label
         this.add.text(centerX - 250, namesY, t('menu_names_optional'), {
             fontSize: '20px',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -247,7 +265,7 @@ export class MenuScene extends Scene {
 
         this.add.text(centerX, y, t('menu_difficulty'), {
             fontSize: '32px',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             color: '#ffffff',          // White
             stroke: '#000000',
             strokeThickness: 6
@@ -281,7 +299,7 @@ export class MenuScene extends Scene {
 
         this.add.text(centerX, y - 40, t('menu_trade_expiry'), {
             fontSize: '32px',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             color: '#ffffff',          // White
             stroke: '#000000',
             strokeThickness: 6
@@ -298,7 +316,7 @@ export class MenuScene extends Scene {
         this.expiryText = this.add.text(centerX, y + 40,
             `${this.gameSettings.tradeExpiry} ${t('menu_turns')}`, {
                 fontSize: '28px',
-                fontFamily: 'Arial Black',
+                fontFamily: 'Nunito',
                 color: '#ffffff',      // White
                 stroke: '#000000',
                 strokeThickness: 5
@@ -307,7 +325,7 @@ export class MenuScene extends Scene {
         // Range labels
         this.add.text(centerX - 150, y + 25, '3', {
             fontSize: '20px',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4
@@ -315,7 +333,7 @@ export class MenuScene extends Scene {
 
         this.add.text(centerX + 150, y + 25, '7', {
             fontSize: '20px',
-            fontFamily: 'Arial Black',
+            fontFamily: 'Nunito',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4

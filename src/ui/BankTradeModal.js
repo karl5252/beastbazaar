@@ -40,6 +40,8 @@ export class BankTradeModal extends Modal {
             }).setOrigin(0.5);
         this.addContent(instructions);
 
+        this.createExchangeRatesReference();
+
         // Create three sections: GIVE, ARROW, RECEIVE
         this.createGiveSection();
         this.createExchangeArrow();
@@ -331,5 +333,19 @@ export class BankTradeModal extends Modal {
         this.scene.events.off('ui:error', this.onError, this);
 
         super.destroy();
+    }
+
+    createExchangeRatesReference() {
+        const y = -230;
+
+        const ratesText = this.scene.add.text(0, y,
+            '6🐰→1🐑  2🐑→1🐷  3🐷→1🐮  2🐮→1🐴  |  1🐑↔1🦊  1🐮↔1🐺', {
+                fontSize: '14px',
+                fontFamily: 'Arial',
+                color: '#666666',
+                align: 'center'
+            }).setOrigin(0.5);
+        this.addContent(ratesText);
+
     }
 }

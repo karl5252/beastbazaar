@@ -92,6 +92,9 @@ export class Preloader extends Scene {
         if (!this.textures.exists('icon_up_arrow')) {
             this.load.image('icon_up_arrow', 'assets/icons/icon_up_arrow.png');
         }
+        if (!this.textures.exists('icon_info')) {
+            this.load.image('icon_info', 'assets/icons/icon_info.png');
+        }
 
         // ===== Load Atlases =====
 

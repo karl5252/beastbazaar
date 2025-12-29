@@ -85,26 +85,31 @@ export class GameMenuModal extends Modal {
         console.log('[GameMenuModal] Music toggled:', newState);
     }
 
+    // game/ui/GameMenuModal.js
+
     returnToMainMenu() {
         console.log('[GameMenuModal] Returning to main menu');
 
-        // Confirm dialog
         const confirmed = confirm(
             t('game_confirm_quit') || 'Are you sure you want to quit? Current game progress will be lost.'
         );
 
         if (confirmed) {
+            const scene = this.scene;
+
             this.close();
 
-            // Small delay to let modal close
-            this.scene.time.delayedCall(200, () => {
+            scene.time.delayedCall(200, () => {
                 // Stop any music
-                if (this.scene.sound) {
-                    this.scene.sound.stopAll();
+                if (scene.sound) {
+                    scene.sound.stopAll();
                 }
 
-                // Return to menu scene
-                this.scene.scene.start('MenuScene');
+                // STOP GameScene first (triggers shutdown)
+                scene.scene.stop('GameScene');
+
+                // Then start MenuScene
+                scene.scene.start('MenuScene');
             });
         }
     }
