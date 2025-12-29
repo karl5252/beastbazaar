@@ -145,18 +145,23 @@ export class GameController {
         });
     }
 
-    acceptTrade(requestId) {
+    acceptTrade({requestId}) {
         return this.dispatch(() => {
             return this.logic.acceptTrade({requestId});
         });
     }
 
-    rejectTrade(requestId) {
+    rejectTrade({requestId}) {
         return this.dispatch(() => {
             const req = this.logic.exchangeManager.exchangeRequests.find(r => r.id === requestId);
             if (!req) return {ok: false, reason: 'request_not_found'};
 
-            req.markRejected();
+            req.markRejected('rejected_by_target');
+
+            // Remove rejected request from the list
+            this.logic.exchangeManager.exchangeRequests =
+                this.logic.exchangeManager.exchangeRequests.filter(r => r.id !== requestId);
+
             return {ok: true};
         });
     }
@@ -164,6 +169,16 @@ export class GameController {
     endTurn() {
         return this.dispatch(() => {
             const result = this.logic.endTurn();
+
+            // Show toast if trades were pruned
+            if (result.tradesPruned > 0) {
+                this.events.emit('ui:toast', {
+                    message: result.tradesPruned === 1
+                        ? 'Trade offer no longer valid!'
+                        : `${result.tradesPruned} trade offers no longer valid!`,
+                    type: 'warning'
+                });
+            }
 
             // Check for victory
             if (result.winnerIndex !== null) {

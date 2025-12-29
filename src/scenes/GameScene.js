@@ -6,6 +6,7 @@ import {GameController} from "../GameController.js";
 import {DEPTH} from "../game/constants/Depth.js";
 import {BankTradeModal} from "../ui/BankTradeModal.js";
 import {PlayerTradeModal} from "../ui/PlayerTradeModal.js";
+import {Toast} from "../ui/Toast.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -43,6 +44,10 @@ export class GameScene extends Scene {
         this.events.on('game:state', this.onStateUpdate, this);
         this.events.on('ui:error', this.onError, this);
         this.events.on('game:victory', this.onVictory, this);
+        this.events.on('ui:toast', this.onToast, this); // ← Add toast listener
+
+        this.currentState = this.controller.getPublicState();
+        this.activeModal = null;
 
         // Get initial state synchronously
         this.currentState = this.controller.getPublicState();
@@ -58,8 +63,8 @@ export class GameScene extends Scene {
         this.createHUD();
         this.createPlayerHerdDisplay();
         this.createActionButtons();
-        this.createBankStatusBar();
         this.createTradeFeed();
+        this.createBankStatusBar();
     }
 
     createHUD() {
@@ -254,7 +259,7 @@ export class GameScene extends Scene {
 
     createBankStatusBar() {
         const {width} = this.cameras.main;
-        const y = 580;
+        const y = 720;  // ← Moved down from 580 to 680 (100px lower)
         const barHeight = 60;
 
         this.add.rectangle(width / 2, y, width, barHeight, 0xd2b48c, 0.9)
@@ -279,11 +284,9 @@ export class GameScene extends Scene {
             const animalKey = animal.charAt(0).toUpperCase() + animal.slice(1);
             const count = this.currentState.bankHerd[animalKey];
 
-            // Sprite
             const sprite = this.add.sprite(x - 15, y, 'animals', animal)
                 .setScale(0.06);
 
-            // Count
             const text = this.add.text(x + 20, y,
                 `×${count}`, {
                     fontSize: '18px',
@@ -297,25 +300,28 @@ export class GameScene extends Scene {
     }
 
     createTradeFeed() {
-        const {width, height} = this.cameras.main;
+        const {width} = this.cameras.main;
         const panelX = width / 2;
-        const panelY = 740;
+        const panelY = 550;  // ← New position (below action buttons)
         const panelWidth = width - 40;
-        const panelHeight = height - panelY - 20;
+        const panelHeight = 110;  // ← Fixed height
 
+        // Background panel
         this.add.rectangle(panelX, panelY + panelHeight / 2,
             panelWidth, panelHeight, 0xffffff, 0.9)
             .setStrokeStyle(3, 0x8b4513);
 
-        const tradeCount = this.currentState.pendingTrades.length;
-        this.add.text(30, panelY + 15,
-            `${t('game_pending_trades')} (${tradeCount})`, {
-                fontSize: '24px',
+        // Title
+        this.tradeFeedTitle = this.add.text(30, panelY + 15,
+            `${t('game_pending_trades')} (0)`, {
+                fontSize: '20px',
                 fontFamily: 'Arial Black',
                 color: '#8b4513'
             });
 
-        this.tradeItemContainer = this.add.container(0, 0);
+        // Scrollable container for trade items
+        this.tradeItemContainer = this.add.container(40, panelY + 50);
+
         this.updateTradeFeed(this.currentState.pendingTrades);
     }
 
@@ -335,8 +341,133 @@ export class GameScene extends Scene {
     }
 
     updateTradeFeed(trades) {
+        // Update title with count
+        const tradeCount = trades.length;
+        this.tradeFeedTitle.setText(`${t('game_pending_trades')} (${tradeCount})`);
+
+        // Clear existing trade items
         this.tradeItemContainer.removeAll(true);
-        // TODO: Create trade items
+
+        if (trades.length === 0) {
+            // Show "no trades" message
+            const noTradesText = this.add.text(450, 10,
+                t('no_pending_trades') || 'No active trade offers', {
+                    fontSize: '18px',
+                    fontFamily: 'Arial',
+                    color: '#888888',
+                    align: 'center'
+                }).setOrigin(0.5);
+            this.tradeItemContainer.add(noTradesText);
+            return;
+        }
+
+        // Create trade offer cards (horizontal layout)
+        const cardWidth = 280;
+        const spacing = 20;
+        let currentX = 0;
+
+        trades.forEach((trade, index) => {
+            const tradeCard = this.createTradeCard(trade, currentX, 0);
+            this.tradeItemContainer.add(tradeCard);
+            currentX += cardWidth + spacing;
+        });
+
+        // TODO: Add scroll buttons if trades overflow
+    }
+
+    createTradeCard(trade, x, y) {
+        const container = this.add.container(x, y);
+        const cardWidth = 260;
+        const cardHeight = 60;
+
+        // Card background
+        const bg = this.add.rectangle(cardWidth / 2, cardHeight / 2,
+            cardWidth, cardHeight, 0xf5f5dc)
+            .setStrokeStyle(2, 0x8b4513);
+        container.add(bg);
+
+        // Get player names
+        const requestorName = this.controller.logic.players[trade.requestorIndex]?.name || `Player ${trade.requestorIndex + 1}`;
+        const targetName = trade.targetIndex === 99
+            ? 'Bank'
+            : this.controller.logic.players[trade.targetIndex]?.name || `Player ${trade.targetIndex + 1}`;
+
+        // Requestor info
+        const requestorText = this.add.text(10, 10,
+            requestorName, {
+                fontSize: '14px',
+                fontFamily: 'Arial Black',
+                color: '#555555'
+            }).setOrigin(0);
+        container.add(requestorText);
+
+        // Offer: "6x Rabbit → 1x Sheep"
+        const offerText = this.add.text(10, 30,
+            `${trade.offer.amount}× ${trade.offer.animal} → ${trade.want.amount}× ${trade.want.animal}`, {
+                fontSize: '13px',
+                fontFamily: 'Arial',
+                color: '#000000'
+            }).setOrigin(0);
+        container.add(offerText);
+
+        // Target info
+        const targetText = this.add.text(10, 48,
+            `→ ${targetName}`, {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#888888'
+            }).setOrigin(0);
+        container.add(targetText);
+
+        // Action buttons (only show if current player is the target)
+        const currentPlayerIndex = this.currentState.currentPlayerIndex;
+
+        if (trade.targetIndex === currentPlayerIndex) {
+            // Accept button
+            const acceptBtn = new UiButton(this, cardWidth - 70, cardHeight / 2, {
+                color: 'green',
+                size: 's',
+                text: '✓',
+                textStyle: {fontSize: '20px'},
+                onClick: () => this.onAcceptTrade(trade.id)
+            });
+            this.add.existing(acceptBtn);
+            container.add(acceptBtn);
+
+            // Reject button
+            const rejectBtn = new UiButton(this, cardWidth - 25, cardHeight / 2, {
+                color: 'orange',
+                size: 's',
+                text: '✗',
+                textStyle: {fontSize: '20px'},
+                onClick: () => this.onRejectTrade(trade.id)
+            });
+            this.add.existing(rejectBtn);
+            container.add(rejectBtn);
+
+            // Highlight card for current player
+            bg.setFillStyle(0xffffcc);
+        }
+
+        return container;
+    }
+
+    onAcceptTrade(tradeId) {
+        console.log('[GameScene] Accepting trade:', tradeId);
+        const result = this.controller.acceptTrade({requestId: tradeId});
+
+        if (!result.ok) {
+            console.error('[GameScene] Failed to accept trade:', result.reason);
+        }
+    }
+
+    onRejectTrade(tradeId) {
+        console.log('[GameScene] Rejecting trade:', tradeId);
+        const result = this.controller.rejectTrade({requestId: tradeId});
+
+        if (!result.ok) {
+            console.error('[GameScene] Failed to reject trade:', result.reason);
+        }
     }
 
     onStateUpdate(state) {
@@ -382,8 +513,26 @@ export class GameScene extends Scene {
         this.updateTradeFeed(state.pendingTrades);
     }
 
+    onToast(toastData) {
+        Toast.show(this, toastData.message, toastData.type);
+    }
+
     onError(errorResult) {
         console.error('[GameScene] Error:', errorResult);
+
+        // Show error as toast
+        const errorMessages = {
+            'already_rolled': 'You already rolled this turn!',
+            'already_exchanged': 'You already exchanged this turn!',
+            'not_your_turn': 'Not your turn!',
+            'player_lacks_from': 'Not enough animals!',
+            'bank_lacks_to': 'Bank out of stock!',
+            'requestor_lacks_offer': 'Cannot complete trade - not enough animals!',
+            'acceptor_lacks_want': 'Cannot complete trade - other player lacks animals!',
+        };
+
+        const message = errorMessages[errorResult.reason] || `Error: ${errorResult.reason}`;
+        Toast.show(this, message, 'error');
     }
 
     onVictory(victoryData) {
@@ -446,5 +595,6 @@ export class GameScene extends Scene {
         this.events.off('game:state', this.onStateUpdate, this);
         this.events.off('ui:error', this.onError, this);
         this.events.off('game:victory', this.onVictory, this);
+        this.events.off('ui:toast', this.onToast, this); // ← Clean up
     }
 }

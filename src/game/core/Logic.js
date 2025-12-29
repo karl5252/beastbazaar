@@ -82,17 +82,28 @@ export class Logic {
 
 
     endTurn() {
-        this.exchangeManager.pruneInvalidRequests({
-            currentTurn: this.turnNumber,
-            expiryTurns: this.config.tradeExpiry,
-            herdProvider: (idx) => this.players[idx]?.getHerd(),
-        });
-
         const current = this.getCurrentPlayer();
 
         if (checkVictoryCondition(current)) {
             return {ok: true, winnerIndex: current.index};
         }
+
+        // Get count before pruning
+        const tradesBefore = this.exchangeManager.exchangeRequests.length;
+
+        // Prune invalid/expired trade requests
+        this.exchangeManager.pruneInvalidRequests({
+            currentTurn: this.turnNumber,
+            expiryTurns: this.config.tradeExpiry ?? 5,
+            herdProvider: (playerIndex) => {
+                if (playerIndex === 99) return this.bankHerd.getHerd();
+                return this.players[playerIndex]?.getHerd() || null;
+            }
+        });
+
+        // Get count after pruning
+        const tradesAfter = this.exchangeManager.exchangeRequests.length;
+        const tradesPruned = tradesBefore - tradesAfter;
 
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         this.turnNumber += 1;
@@ -102,7 +113,8 @@ export class Logic {
             ok: true,
             winnerIndex: null,
             currentPlayerIndex: this.currentPlayerIndex,
-            turnNumber: this.turnNumber
+            turnNumber: this.turnNumber,
+            tradesPruned // ← Include pruned count
         };
     }
 

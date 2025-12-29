@@ -45,7 +45,8 @@
     "trade_with": "Trade with {player}",
     "trade_you_offer": "Your Offer:",
     "trade_you_want": "You Want:",
-    "trade_create_offer": "CREATE OFFER"
+    "trade_create_offer": "CREATE OFFER",
+    "no_pending_trades": "No pending trades."
   },
   "pl": {
     "menu_start_game": "Rozpocznij grę"
