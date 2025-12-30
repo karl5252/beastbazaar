@@ -1,5 +1,6 @@
 import {Scene} from 'phaser';
 import {initI18n} from "../utils/i18n.js";
+import {logger} from "../utils/Logger.js";
 
 
 export class Boot extends Scene {
