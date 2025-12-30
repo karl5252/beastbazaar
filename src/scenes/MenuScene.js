@@ -74,7 +74,7 @@ export class MenuScene extends Scene {
         const {width, height} = this.cameras.main;
 
         // Info button in corner
-        const howToPlayBtn = new UiButton(this, width - 100, height - 50, {
+        const howToPlayBtn = new UiButton(this, width - 120, height - 50, {
             color: 'teal',
             size: 'm',
             icon: 'icon_info',
@@ -134,7 +134,6 @@ export class MenuScene extends Scene {
             flagButton.on('pointerdown', () => {
                 setLang(lang.code);
 
-                // Assets already loaded, just restart MenuScene
                 this.scene.restart();
             });
         });
@@ -145,17 +144,9 @@ export class MenuScene extends Scene {
     createTitle() {
         const {width} = this.cameras.main;
 
-        // Use atlas sprite for title
         const title = this.add.image(width / 2, 150, 'title')
             .setOrigin(0.5)
-            .setScale(0.2); // Adjust to fit screen
-
-
-        // Optional: Add animal decorations using animals atlas
-        // const rabbit = this.add.sprite(width / 2 - 300, 150, 'animals', 'rabbit')
-        //     .setScale(0.3);
-        // const horse = this.add.sprite(width / 2 + 300, 150, 'animals', 'horse')
-        //     .setScale(0.3);
+            .setScale(0.2);
     }
 
     createPlayerSetup() {
@@ -205,7 +196,7 @@ export class MenuScene extends Scene {
 
         // ===== Row 2: Player Names (below) =====
 
-        const namesY = y + 80;  // 70px below player count row
+        const namesY = y + 80;
 
         // "Names (optional)" label
         this.add.text(centerX - 250, namesY, t('menu_names_optional'), {
@@ -256,40 +247,6 @@ export class MenuScene extends Scene {
             btnObj.label.setText(displayName);
         }
     }
-
-    /*createNameButton(x, y, index) {
-        // Use UiButton for name buttons
-        const nameBtn = new UiButton(this, x, y, {
-            atlas: 'buttons',
-            key: 'btn_violet',
-            w: 100,
-            h: 40,
-            slice: 16,
-            text: `P${index + 1}`,
-            textStyle: {fontSize: '20px'},
-            autoSize: false,
-            onClick: () => {
-                if (index < this.gameSettings.playerCount) {
-                    this.openNameInput(index, nameBtn);
-                }
-            }
-        });
-
-        nameBtn.visible = index < this.gameSettings.playerCount;
-        return nameBtn;
-    }
-
-    openNameInput(index, btnObj) {
-        const currentName = this.gameSettings.playerNames[index];
-        const newName = prompt(t('menu_enter_player_name', {number: index + 1}), currentName);
-
-        if (newName && newName.trim()) {
-            const trimmedName = newName.trim().slice(0, 12);
-            this.gameSettings.playerNames[index] = trimmedName;
-            const displayName = trimmedName.length > 8 ? trimmedName.slice(0, 8) + '...' : trimmedName;
-            btnObj.label.setText(displayName);
-        }
-    */
 
     createDifficultySelector() {
         const {width} = this.cameras.main;

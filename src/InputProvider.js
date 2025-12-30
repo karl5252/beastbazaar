@@ -81,7 +81,7 @@ export class KeyboardInputProvider extends BaseInputProvider {
 
         }
 
-        console.debug(`Keyboard controls setup for ${this.scheme} scheme`)
+        logger.debug(`Keyboard controls setup for ${this.scheme} scheme`)
     }
 
 }

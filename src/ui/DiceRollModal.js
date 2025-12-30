@@ -54,7 +54,6 @@ export class DiceRollModal extends Phaser.GameObjects.Container {
             .setOrigin(0.5);
         this.add(this.redDice);
 
-        // "Rolling..." text
         this.rollingText = scene.add.text(0, 150, 'Rolling...', {
             fontSize: '32px',
             fontFamily: 'Arial Black',

@@ -99,7 +99,7 @@ export class GameController {
 
         // Optional: log for debugging
         if (this.config.debug) {
-            console.log('[GameController] State snapshot:', state);
+            logger.log('[GameController] State snapshot:', state);
         }
     }
 

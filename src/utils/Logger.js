@@ -2,7 +2,7 @@
 export class Logger {
     constructor() {
         this.logLevel = 'INFO'; // DEBUG, INFO, WARN, ERROR
-        this.mode = 'LOUD'; // SILENT (file only) or LOUD (console + file)
+        this.mode = 'SILENT'; // SILENT (file only) or LOUD (console + file)
         this.logs = [];
         this.maxLogsInMemory = 1000;
         this.currentLogFile = null;

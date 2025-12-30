@@ -8,6 +8,7 @@ export class Preloader extends Scene {
 
     preload() {
         const {width, height} = this.cameras.main;
+        this.add.image(width / 2, height / 2, 'splash').setScale(0.5).setOrigin(0.5)
 
         // Progress bar
         const barWidth = 400;

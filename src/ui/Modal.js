@@ -18,7 +18,6 @@ export class Modal extends Phaser.GameObjects.Container {
         this.modalHeight = height;
         this.onCloseCallback = onClose;
 
-        // Center position
         const {width: screenWidth, height: screenHeight} = scene.cameras.main;
         this.x = screenWidth / 2;
         this.y = screenHeight / 2;
@@ -53,8 +52,8 @@ export class Modal extends Phaser.GameObjects.Container {
         this.overlay.setOrigin(0.5);
         this.overlay.setInteractive();
 
-        // Click overlay to close (optional)
-        // this.overlay.on('pointerdown', () => this.close());
+        // Click overlay to close
+        this.overlay.on('pointerdown', () => this.close());
 
         this.add(this.overlay);
     }

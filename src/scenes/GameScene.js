@@ -10,6 +10,7 @@ import {Toast} from "../ui/Toast.js";
 import {GameMenuModal} from "../ui/GameMenuModal.js";
 import {DiceRollModal} from "../ui/DiceRollModal.js";
 import {HowToPlayModal} from "../ui/HowToPlayModal.js";
+import {logger} from "../utils/Logger.js";
 
 export class GameScene extends Scene {
     constructor() {
@@ -18,7 +19,7 @@ export class GameScene extends Scene {
 
     init(data) {
         if (!data || !data.playerCount) {
-            console.warn('[GameScene] No config provided, using TEST config');
+            logger.warn('[GameScene] No config provided, using TEST config');
             this.gameConfig = {
                 playerCount: 2,
                 playerNames: ['TestPlayer1', 'TestPlayer2'],
@@ -122,7 +123,7 @@ export class GameScene extends Scene {
     }
 
     openHowToPlay() {
-        console.log('Info clicked');
+        logger.log('Info clicked');
 
         if (this.activeModal) {
             this.activeModal.close();
@@ -502,29 +503,29 @@ export class GameScene extends Scene {
     }
 
     onAcceptTrade(tradeId) {
-        console.log('[GameScene] Accepting trade:', tradeId);
+        logger.log('[GameScene] Accepting trade:', tradeId);
         const result = this.controller.acceptTrade({requestId: tradeId});
 
         if (!result.ok) {
-            console.error('[GameScene] Failed to accept trade:', result.reason);
+            logger.error('[GameScene] Failed to accept trade:', result.reason);
         }
     }
 
     onRejectTrade(tradeId) {
-        console.log('[GameScene] Rejecting trade:', tradeId);
+        logger.log('[GameScene] Rejecting trade:', tradeId);
         const result = this.controller.rejectTrade({requestId: tradeId});
 
         if (!result.ok) {
-            console.error('[GameScene] Failed to reject trade:', result.reason);
+            logger.error('[GameScene] Failed to reject trade:', result.reason);
         }
     }
 
     onStateUpdate(state) {
-        console.log('[GameScene] Received state update:', state);
+        logger.log('[GameScene] Received state update:', state);
 
         // Safety check - if scene is shutting down, ignore updates
         if (!this.scene || !this.scene.isActive('GameScene')) {
-            console.log('[GameScene] Scene not active, ignoring state update');
+            logger.log('[GameScene] Scene not active, ignoring state update');
             return;
         }
 
@@ -532,7 +533,7 @@ export class GameScene extends Scene {
 
         // Update HUD - check if elements exist
         if (!this.hudElements || !this.hudElements.turnText) {
-            console.warn('[GameScene] HUD elements not initialized');
+            logger.warn('[GameScene] HUD elements not initialized');
             return;
         }
 
@@ -586,7 +587,7 @@ export class GameScene extends Scene {
     }
 
     onError(errorResult) {
-        console.error('[GameScene] Error:', errorResult);
+        logger.error('[GameScene] Error:', errorResult);
 
         // Show error as toast
         const errorMessages = {
@@ -604,17 +605,17 @@ export class GameScene extends Scene {
     }
 
     onVictory(victoryData) {
-        console.log('[GameScene] Victory!', victoryData);
+        logger.log('[GameScene] Victory!', victoryData);
     }
 
     onRollDice() {
-        console.log('Roll dice clicked');
+        logger.log('Roll dice clicked');
 
         // 1. FIRST: Get the actual dice roll result
         const result = this.controller.rollDice();
 
         if (!result.ok) {
-            console.error('[GameScene] Roll failed:', result.reason);
+            logger.error('[GameScene] Roll failed:', result.reason);
             return;
         }
 
@@ -626,7 +627,7 @@ export class GameScene extends Scene {
                 result.diceResults.red,
                 () => {
                     // Animation complete callback
-                    console.log('[GameScene] Dice animation complete');
+                    logger.log('[GameScene] Dice animation complete');
                 }
             );
             this.add.existing(diceModal);
@@ -635,11 +636,11 @@ export class GameScene extends Scene {
 
     processDiceRoll() {
         // Dice roll is already done, just let state update handle UI
-        console.log('[GameScene] Dice roll complete');
+        logger.log('[GameScene] Dice roll complete');
     }
 
     onOpenBank() {
-        console.log('Bank clicked');
+        logger.log('Bank clicked');
 
         // Close existing modal if any
         if (this.activeModal) {
@@ -653,7 +654,7 @@ export class GameScene extends Scene {
     }
 
     onOpenTrade() {
-        console.log('Trade clicked');
+        logger.log('Trade clicked');
 
         // Close existing modal if any
         if (this.activeModal) {
@@ -667,12 +668,12 @@ export class GameScene extends Scene {
     }
 
     onEndTurn() {
-        console.log('End turn clicked');
+        logger.log('End turn clicked');
         this.controller.endTurn();
     }
 
     openGameMenu() {
-        console.log('Menu clicked');
+        logger.log('Menu clicked');
 
         // Close existing modal if any
         if (this.activeModal) {
@@ -686,7 +687,7 @@ export class GameScene extends Scene {
     }
 
     shutdown() {
-        console.log('[GameScene] Shutting down...');
+        logger.log('[GameScene] Shutting down...');
 
         // Remove event listeners
         this.events.off('game:state', this.onStateUpdate, this);

@@ -3,6 +3,7 @@ import {PlayerState} from "../../src/game/core/PlayerState.js";
 import {setHerd} from "../helpers/helper.js";
 import {EXCHANGE_RATES} from "../../src/game/constants/ExchangeRates.js";
 import {exchangeWithBankAtomic} from "../../src/game/core/Logic.js";
+import {logger} from "../../src/utils/Logger.js";
 
 describe("bank exchange rates (from EXCHANGE_RATES)", () => {
     let p, bank;
@@ -20,7 +21,7 @@ describe("bank exchange rates (from EXCHANGE_RATES)", () => {
     test.each(cases)("exchanges %s -> %s (give %i, get %i)", (from, to, give, get) => {
         setHerd(p, {[from]: give});
         setHerd(bank, {[to]: get});
-        //console.log({ key: `${from}->${to}`, from, to, give, get, herd: p.getHerd() });
+        logger.log({key: `${from}->${to}`, from, to, give, get, herd: p.getHerd()});
 
         const res = exchangeWithBankAtomic({player: p, bank, animalFrom: from, animalTo: to});
         expect(res.ok).toBe(true);

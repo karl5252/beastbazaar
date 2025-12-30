@@ -2,6 +2,7 @@
 import {Modal} from "./Modal.js";
 import {UiButton} from "./UiButton.js";
 import {t} from "../utils/i18n.js";
+import {logger} from "../utils/Logger.js";
 
 export class HowToPlayModal extends Modal {
     constructor(scene) {
@@ -10,7 +11,7 @@ export class HowToPlayModal extends Modal {
             height: 650,
             title: t('how_to_play_title') || 'HOW TO PLAY',
             showCloseButton: true,
-            onClose: () => console.log('[HowToPlayModal] Closed')
+            onClose: () => logger.log('[HowToPlayModal] Closed')
         });
 
         this.createContent();
@@ -21,7 +22,7 @@ export class HowToPlayModal extends Modal {
         const lineSpacing = 35;
         const sectionSpacing = 50;
 
-        // Objective (big and bold)
+        // Objective
         const objective = this.scene.add.text(0, currentY,
             '🎯 ' + (t('how_to_play_objective') || 'Collect one of each: Rabbit, Sheep, Pig, Cow, Horse'), {
                 fontSize: '22px',
