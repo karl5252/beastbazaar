@@ -156,10 +156,9 @@ export class Logic {
         if (greenDiceResult === redDiceResult) {
             const animal = greenDiceResult;
             const currentCount = herd[animal] ?? 0;
-            const pairs = Math.floor(currentCount / 2);
 
-            // Even with no animals, rolling a pair grants 1
-            const gain = Math.max(pairs, 1);
+            // rolledCount = 2 (double)
+            const gain = breedingGain(currentCount, 2);
 
             const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
             const actualGain = Math.min(gain, bankCount);
@@ -172,7 +171,7 @@ export class Logic {
             return {ok: true, type: "breeding", animal, gained: actualGain};
         }
 
-        // Different animals rolled - need to own at least one animal to breed
+// Different animals rolled
         const hasAnimals = Object.values(herd).some(count => count > 0);
         if (!hasAnimals) {
             this.turnState.hasRolled = true;
@@ -184,10 +183,10 @@ export class Logic {
             const currentCount = herd[animal] ?? 0;
             if (currentCount <= 0) return;
 
-            const pairs = Math.floor(currentCount / 2);
-            if (pairs <= 0) return;
+            // rolledCount = 1 (single die)
+            const gain = breedingGain(currentCount, 1);
+            if (gain <= 0) return;
 
-            const gain = pairs;
             const bankCount = this.bankHerd.getHerd()[animal] ?? 0;
             const actualGain = Math.min(gain, bankCount);
 
@@ -352,3 +351,9 @@ export function checkVictoryCondition(player) {
     const h = player.getHerd();
     return WIN_REQUIREMENTS.every(a => (h[a] ?? 0) >= 1);
 }
+
+export function breedingGain(currentCount, rolledCount) {
+    // total animals that can form pairs = owned + rolled
+    return Math.floor((currentCount + rolledCount) / 2);
+}
+

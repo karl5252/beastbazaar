@@ -61,7 +61,7 @@ describe("breeding logic tests", () => {
         expect(player.getHerd()).toEqual({
             "Rabbit": 0,
             "Sheep": 0,
-            "Pig": 6, // +2 pigs from 2 pairs
+            "Pig": 7, // +2 pigs from 2 pairs
             "Cow": 0,
             "Horse": 0,
             "Foxhound": 0,
@@ -76,7 +76,7 @@ describe("breeding logic tests", () => {
             "Rabbit": 0,
             "Sheep": 0,
             "Pig": 0,
-            "Cow": 7, // +2 cows from 2 pairs
+            "Cow": 8, // +2 cows from 2 pairs
             "Horse": 0,
             "Foxhound": 0,
             "Wolfhound": 0
@@ -107,7 +107,7 @@ describe("breeding logic tests", () => {
             "Foxhound": 0,
             "Wolfhound": 0,
             "Sheep": 0,
-            "Rabbit": 4,
+            "Rabbit": 5,
             "Pig": 0,
         })
     })
