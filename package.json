@@ -1,7 +1,7 @@
 {
   "name": "beast-bazaar",
   "private": true,
-  "version": "1.5.7",
+  "version": "1.5.8",
   "type": "module",
   "scripts": {
     "gen:keys": "node scripts/generate-keys.mjs 5",
