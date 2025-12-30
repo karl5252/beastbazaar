@@ -11,7 +11,7 @@ export class DiceRoller {
         const difficultyKey = difficulty.toUpperCase();
 
         if (!DICE_CONFIG[difficultyKey]) {
-            console.warn(`Unknown difficulty: ${difficulty}, defaulting to EASY`);
+            logger.warn(`Unknown difficulty: ${difficulty}, defaulting to EASY`);
             this.config = DICE_CONFIG.EASY;
         } else {
             this.config = DICE_CONFIG[difficultyKey];

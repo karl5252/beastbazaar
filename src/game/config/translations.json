@@ -57,7 +57,7 @@
   "pl": {
     "menu_title": "BEAST BAZAAR",
     "menu_players": "Gracze:",
-    "menu_names_optional": "Imiona (kliknij, aby edytować):",
+    "menu_names_optional": "Imiona (klik):",
     "menu_enter_player_name": "Podaj imię dla gracza {number}:",
     "menu_difficulty": "Poziom trudności:",
     "menu_trade_expiry": "Ważność ofert wymiany:",
@@ -113,7 +113,7 @@
   "ru": {
     "menu_title": "BEAST BAZAAR",
     "menu_players": "Игроки:",
-    "menu_names_optional": "Имена (нажмите, чтобы изменить):",
+    "menu_names_optional": "Имена (клик):",
     "menu_enter_player_name": "Введите имя для игрока {number}:",
     "menu_difficulty": "Сложность:",
     "menu_trade_expiry": "Срок обмена:",
@@ -168,7 +168,7 @@
   "es": {
     "menu_title": "BEAST BAZAAR",
     "menu_players": "Jugadores:",
-    "menu_names_optional": "Nombres (clic para editar):",
+    "menu_names_optional": "Nombres (clic):",
     "menu_enter_player_name": "Introduce el nombre del jugador {number}:",
     "menu_difficulty": "Dificultad:",
     "menu_trade_expiry": "Duración del intercambio:",

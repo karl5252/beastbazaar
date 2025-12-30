@@ -2,6 +2,7 @@
 import {Modal} from "./Modal.js";
 import {UiButton} from "./UiButton.js";
 import {t} from "../utils/i18n.js";
+import {logger} from "../utils/Logger.js";
 
 export class PlayerTradeModal extends Modal {
     constructor(scene, controller) {
@@ -10,7 +11,7 @@ export class PlayerTradeModal extends Modal {
             height: 700,
             title: t('player_trade_title') || '🔄 Trade with Players',
             showCloseButton: true,
-            onClose: () => console.log('[PlayerTradeModal] Closed')
+            onClose: () => logger.log('[PlayerTradeModal] Closed')
         });
 
         this.controller = controller;
@@ -44,13 +45,12 @@ export class PlayerTradeModal extends Modal {
 
         this.createPlayerSelector();
         this.createOfferSection();
-        this.createExchangeArrow();  // ← This adds the arrow
+        this.createExchangeArrow();
         this.createWantSection();
         this.createActionButtons();
     }
 
     createExchangeArrow() {
-        // Replace emoji with icon sprite
         const arrow = this.scene.add.sprite(0, 0, 'icon_right_arrow')
             .setScale(0.15)
             .setOrigin(0.5);
@@ -275,7 +275,7 @@ export class PlayerTradeModal extends Modal {
     }
 
     selectPlayer(playerIndex) {
-        console.log('[PlayerTradeModal] Selected player:', playerIndex);
+        logger.log('[PlayerTradeModal] Selected player:', playerIndex);
 
         // Deselect previous
         if (this.selectedTargetPlayer !== null && this.playerButtons[this.selectedTargetPlayer]) {
@@ -293,7 +293,7 @@ export class PlayerTradeModal extends Modal {
     }
 
     selectOfferAnimal(animal) {
-        console.log('[PlayerTradeModal] Selected offer animal:', animal);
+        logger.log('[PlayerTradeModal] Selected offer animal:', animal);
 
         if (this.offerAnimal && this.offerAnimalButtons[this.offerAnimal]) {
             this.offerAnimalButtons[this.offerAnimal].bg.setFillStyle(0xeeeeee);
@@ -311,7 +311,7 @@ export class PlayerTradeModal extends Modal {
     }
 
     selectWantAnimal(animal) {
-        console.log('[PlayerTradeModal] Selected want animal:', animal);
+        logger.log('[PlayerTradeModal] Selected want animal:', animal);
 
         if (this.wantAnimal && this.wantAnimalButtons[this.wantAnimal]) {
             this.wantAnimalButtons[this.wantAnimal].bg.setFillStyle(0xeeeeee);
@@ -344,7 +344,7 @@ export class PlayerTradeModal extends Modal {
         } else {
             const newAmount = this.wantAmount + delta;
             if (newAmount < 1) return;
-            if (newAmount > 99) return; // Reasonable max
+            if (newAmount > 20) return; // Reasonable max
 
             this.wantAmount = newAmount;
             this.wantQuantityText.setText(`${this.wantAmount}`);
@@ -366,10 +366,8 @@ export class PlayerTradeModal extends Modal {
         this.createOfferBtn.setEnabled(canCreate);
     }
 
-    // game/ui/PlayerTradeModal.js
-
     createOffer() {
-        console.log('[PlayerTradeModal] Creating trade offer:', {
+        logger.log('[PlayerTradeModal] Creating trade offer:', {
             target: this.selectedTargetPlayer,
             targetType: typeof this.selectedTargetPlayer,
             offer: `${this.offerAmount}x ${this.offerAnimal}`,
@@ -389,23 +387,23 @@ export class PlayerTradeModal extends Modal {
             }
         };
 
-        console.log('[PlayerTradeModal] Trade data:', tradeData);
-        console.log('[PlayerTradeModal] targetIndex is integer?', Number.isInteger(tradeData.targetIndex));
+        logger.log('[PlayerTradeModal] Trade data:', tradeData);
+        logger.log('[PlayerTradeModal] targetIndex is integer?', Number.isInteger(tradeData.targetIndex));
 
         const result = this.controller.postTradeRequest(tradeData);
 
-        console.log('[PlayerTradeModal] Result:', result);
+        logger.log('[PlayerTradeModal] Result:', result);
 
         if (result.ok) {
-            console.log('[PlayerTradeModal] Trade offer created successfully!');
+            logger.log('[PlayerTradeModal] Trade offer created successfully!');
             this.close();
         } else {
-            console.error('[PlayerTradeModal] Failed to create trade offer:', result.reason);
+            logger.error('[PlayerTradeModal] Failed to create trade offer:', result.reason);
         }
     }
 
     onStateUpdate(state) {
-        console.log('[PlayerTradeModal] State updated');
+        logger.log('[PlayerTradeModal] State updated');
         this.currentState = state;
 
         // Update animal counts in offer section
@@ -421,7 +419,7 @@ export class PlayerTradeModal extends Modal {
     }
 
     onError(errorResult) {
-        console.error('[PlayerTradeModal] Error:', errorResult);
+        logger.error('[PlayerTradeModal] Error:', errorResult);
 
         const errorText = this.scene.add.text(0, 250,
             `Error: ${errorResult.reason}`, {

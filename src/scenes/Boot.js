@@ -1,5 +1,6 @@
 import {Scene} from 'phaser';
 import {initI18n} from "../utils/i18n.js";
+import {logger} from "../utils/Logger.js";
 
 
 export class Boot extends Scene {
@@ -20,7 +21,7 @@ export class Boot extends Scene {
             document.fonts.load('400 16px "Nunito"'),
             document.fonts.load('700 16px "Nunito"')
         ]).then(() => {
-            console.log('[fonts] Nunito ready:', document.fonts.check('16px "Nunito"'));
+            logger.log('[fonts] Nunito ready:', document.fonts.check('16px "Nunito"'));
             this.scene.start('Preloader');
         });
 

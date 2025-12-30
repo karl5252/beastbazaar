@@ -83,9 +83,7 @@ describe("exchange manager logic", () => {
             createdTurn: 0,
             requestorHerd: p1.getHerd()
         });
-        //console.log(em.exchangeRequests);
-        //console.log("p1", p1.getHerd());
-        //console.log("p2", p2.getHerd());
+
 
         const acc = em.acceptRequest({
             requestId: res.requestId,

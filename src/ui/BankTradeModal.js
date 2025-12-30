@@ -3,6 +3,7 @@ import {Modal} from "./Modal.js";
 import {UiButton} from "./UiButton.js";
 import {t} from "../utils/i18n.js";
 import {EXCHANGE_RATES} from "../game/constants/ExchangeRates.js";
+import {logger} from "../utils/Logger.js";
 
 export class BankTradeModal extends Modal {
     constructor(scene, controller) {
@@ -11,7 +12,7 @@ export class BankTradeModal extends Modal {
             height: 650,
             title: t('bank_trade_title') || ' Bank Exchange',
             showCloseButton: true,
-            onClose: () => console.log('[BankTradeModal] Closed')
+            onClose: () => logger.log('[BankTradeModal] Closed')
         });
 
         this.controller = controller;
@@ -42,7 +43,6 @@ export class BankTradeModal extends Modal {
 
         this.createExchangeRatesReference();
 
-        // Create three sections: GIVE, ARROW, RECEIVE
         this.createGiveSection();
         this.createExchangeArrow();
         this.createReceiveSection();
@@ -191,7 +191,7 @@ export class BankTradeModal extends Modal {
     }
 
     selectGive(animal) {
-        console.log('[BankTradeModal] Selected give:', animal);
+        logger.log('[BankTradeModal] Selected give:', animal);
 
         // Deselect previous
         if (this.selectedGive && this.giveButtons[this.selectedGive]) {
@@ -209,7 +209,7 @@ export class BankTradeModal extends Modal {
     }
 
     selectReceive(animal) {
-        console.log('[BankTradeModal] Selected receive:', animal);
+        logger.log('[BankTradeModal] Selected receive:', animal);
 
         // Deselect previous
         if (this.selectedGet && this.receiveButtons[this.selectedGet]) {
@@ -271,7 +271,7 @@ export class BankTradeModal extends Modal {
     confirmExchange() {
         if (!this.selectedGive || !this.selectedGet) return;
 
-        console.log('[BankTradeModal] Confirming exchange:',
+        logger.log('[BankTradeModal] Confirming exchange:',
             this.selectedGive, '→', this.selectedGet);
 
         // Call controller to perform exchange
@@ -281,16 +281,16 @@ export class BankTradeModal extends Modal {
         );
 
         if (result.ok) {
-            console.log('[BankTradeModal] Exchange successful!');
+            logger.log('[BankTradeModal] Exchange successful!');
             // Close modal after successful exchange
             this.close();
         } else {
-            console.error('[BankTradeModal] Exchange failed:', result.reason);
+            logger.error('[BankTradeModal] Exchange failed:', result.reason);
         }
     }
 
     onStateUpdate(state) {
-        console.log('[BankTradeModal] State updated');
+        logger.log('[BankTradeModal] State updated');
         this.currentState = state;
 
         // Update animal counts in buttons
@@ -310,7 +310,7 @@ export class BankTradeModal extends Modal {
     }
 
     onError(errorResult) {
-        console.error('[BankTradeModal] Error:', errorResult);
+        logger.error('[BankTradeModal] Error:', errorResult);
 
         // Show error message
         const errorText = this.scene.add.text(0, 200,
